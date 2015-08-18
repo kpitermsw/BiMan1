@@ -1,0 +1,3849 @@
+Index: app/src/main/java/biman/middle/kokin/ru/KontrProcess.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/biman/middle/kokin/ru/KontrProcess.java	(revision )
++++ app/src/main/java/biman/middle/kokin/ru/KontrProcess.java	(revision )
+@@ -0,0 +1,153 @@
++package biman.middle.kokin.ru;
++
++import java.util.ArrayList;
++import java.util.HashMap;
++import java.util.List;
++import java.util.Map;
++
++import android.database.Cursor;
++import android.database.sqlite.SQLiteDatabase;
++import android.view.View;
++import android.view.View.OnClickListener;
++import android.widget.AdapterView;
++import android.widget.Button;
++import android.widget.EditText;
++import android.widget.ExpandableListAdapter;
++import android.widget.ExpandableListView;
++import android.widget.ListAdapter;
++import android.widget.ListView;
++import android.widget.SimpleAdapter;
++import android.widget.SimpleExpandableListAdapter;
++import android.widget.AdapterView.OnItemClickListener;
++
++public class KontrProcess {
++    private static final String NAME = "NAME";
++    private static final String IS_EVEN = "IS_EVEN";
++    
++	EditText eFind;
++    Button bFind;
++    SQLiteDatabase database;
++    BiManActivity ba;
++    List<Map<String, String>> groupData;
++    List<List<Map<String, String>>> childData;
++    
++    ExpandableListAdapter mAdapter;
++    List<Map<String, String>> kontrs;
++    Map<String, String> kontrMap;
++    
++	public void kontrStart(SQLiteDatabase db, BiManActivity pba ) {
++		ba = pba;
++		database = db;
++
++		kontrs = new ArrayList<Map<String, String>>();
++		
++		
++        eFind = (EditText) ba.findViewById(R.id.findText);
++        bFind = (Button) ba.findViewById(R.id.bFind);
++        bFind.setOnClickListener(new OnClickListener() {
++        	@Override
++        	public void onClick(View v) {
++        		setKontrView("", eFind.getText().toString());
++        	}
++        });
++
++        groupData = new ArrayList<Map<String, String>>();
++        childData = new ArrayList<List<Map<String, String>>>();
++        
++        Map<String, String> curGroupMap = new HashMap<String, String>();
++        groupData.add(curGroupMap);
++        curGroupMap.put(NAME, "      "+"�����������");
++
++        List<Map<String, String>> children = new ArrayList<Map<String, String>>();          
++        Map<String, String> curChildMap;
++        curChildMap = new HashMap<String, String>();
++        children.add(curChildMap);
++        curChildMap.put(NAME, "���");
++        
++        curChildMap = new HashMap<String, String>();        
++        children.add(curChildMap);
++        curChildMap.put(NAME, "�����");
++	
++        childData.add(children);        
++        
++        
++        ExpandableListView elv1;
++        elv1 = (ExpandableListView) ba.findViewById(R.id.expKontrs);
++        
++        
++        mAdapter = new SimpleExpandableListAdapter(
++                ba,
++                groupData,
++                //android.R.layout.simple_expandable_list_item_1,
++                R.layout.listadapter1,
++                new String[] { NAME, IS_EVEN },
++                //new int[] { android.R.id.text1, android.R.id.text2 },
++                new int[] { R.id.textView1, android.R.id.text2 },
++                childData,
++                android.R.layout.simple_expandable_list_item_2,
++                new String[] { NAME, IS_EVEN },
++                new int[] { android.R.id.text1, android.R.id.text2 }
++                );
++        
++        elv1.setAdapter(mAdapter);
++        setKontrView("0","");
++        
++        
++	}
++
++    public void setKontrView(String sidParent, String AddedWhere) {
++    	
++    	kontrs.clear();
++
++		String sqlKontrs;
++    	if (!AddedWhere.equals("")) {
++      	  sqlKontrs = "select cnm_kontragent from kontragents ";
++    	} else {
++       	  sqlKontrs = "select cnm_kontragent from kontragents ";    		
++    	}
++    	
++    	
++		Cursor kontrCursor = database.rawQuery(sqlKontrs, new String [] {});
++		kontrCursor.moveToFirst();
++			if(!kontrCursor.isAfterLast()) {
++				do {
++			    	kontrMap = new HashMap<String, String>();
++			    	kontrs.add(kontrMap);
++			    	kontrMap.put("cnm_kontragent", kontrCursor.getString(0));    	
++			    	
++					
++				} while (kontrCursor.moveToNext());
++			}
++			kontrCursor.close();							
++		
++	
++			/*
++				nOSTTotal, nOSTReserv, nOSTFree
++			*/
++			
++		ListView lv = (ListView)ba.findViewById(R.id.listKontrs);
++		ListAdapter la = new SimpleAdapter(
++					ba, 
++					kontrs, 
++					R.layout.listkontrs, 
++					new String[] {"cnm_kontragent"}, 
++					new int[]{R.id.cnm_kontr}
++					);
++		lv.setAdapter(la);
++		lv.setOnItemClickListener(new OnItemClickListener(){
++
++			@Override
++			public void onItemClick(AdapterView<?> arg0, View v, int pos,
++					long arg3) {
++				// TODO Auto-generated method stub
++				ba.showDialog(1);
++
++				kontrMap = kontrs.get(pos);
++				//String s1=goodsMap.get("cnm_goodart").toString();
++				ba.eKontrName.setText(kontrMap.get("cnm_kontragent").toString());
++				
++			}});    	
++    	
++    }	
++	
++}
+Index: app/build/intermediates/res/debug/layout/listgoods.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/build/intermediates/res/debug/layout/listgoods.xml	(revision )
++++ app/build/intermediates/res/debug/layout/listgoods.xml	(revision )
+@@ -0,0 +1,95 @@
++<?xml version="1.0" encoding="utf-8"?>
++
++<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
++    android:layout_width="fill_parent"
++    android:layout_height="fill_parent"
++    android:orientation="vertical" >
++
++    <LinearLayout 
++	    android:layout_width="match_parent"
++	    android:layout_height="50dp"
++	    android:orientation="horizontal" >
++
++    	<TextView
++	        android:id="@+id/cnm_goodart"
++        	android:layout_width="110dp"
++        	android:layout_height="wrap_content"
++        	android:textSize="20dip"
++        	android:text="TextView" />
++
++    	<TextView
++	        android:id="@+id/cnm_good"
++        	android:layout_width="600dp"
++        	android:layout_height="wrap_content"
++        	android:textSize="25dip"
++        	android:text="TextView" />
++
++    	<TextView
++	        android:id="@+id/brand"
++        	android:layout_width="150dp"
++        	android:layout_height="wrap_content"
++        	android:textSize="20dip"
++        	android:text="" />
++    		
++    	
++    </LinearLayout>
++    
++	<LinearLayout 
++	    android:layout_width="match_parent"
++	    android:layout_height="100dp"
++	    android:orientation="horizontal" >
++
++    	<TextView
++	        android:id="@+id/captcost"
++        	android:layout_width="50dp"
++        	android:layout_height="wrap_content"
++        	android:textSize="20dip"
++        	android:text=" Цена:" />
++    	<TextView
++	        android:id="@+id/cost"
++        	android:layout_width="100dp"
++        	android:layout_height="wrap_content"
++        	android:textSize="25dip"
++        	android:text="TextView" />
++    	
++    	<TextView
++	        android:id="@+id/captnOSTTotal"
++        	android:layout_width="50dp"
++        	android:layout_height="wrap_content"
++        	android:textSize="20dip"
++        	android:text="Нал.:" />
++    	<TextView
++	        android:id="@+id/nOSTTotal"
++        	android:layout_width="100dp"
++        	android:layout_height="wrap_content"
++        	android:textSize="25dip"
++        	android:text="TextView" />
++
++    	<TextView
++	        android:id="@+id/captnOSTReserv"
++        	android:layout_width="50dp"
++        	android:layout_height="wrap_content"
++        	android:textSize="20dip"
++        	android:text="рез.:" />
++    	<TextView
++	        android:id="@+id/nOSTReserv"
++        	android:layout_width="100dp"
++        	android:layout_height="wrap_content"
++        	android:textSize="25dip"
++        	android:text="TextView" />
++
++    	<TextView
++	        android:id="@+id/captnOSTFree"
++        	android:layout_width="50dp"
++        	android:layout_height="wrap_content"
++        	android:textSize="20dip"
++        	android:text="св.:" />
++    	<TextView
++	        android:id="@+id/nOSTFree"
++        	android:layout_width="100dp"
++        	android:layout_height="wrap_content"
++        	android:textSize="25dip"
++        	android:text="TextView" />
++	</LinearLayout>
++	
++</LinearLayout>	<!-- From: file:/C:/Users/admin/AndroidStudioProjects/BiMan1/app/src/main/res/layout/listgoods.xml -->
+\ No newline at end of file
+Index: app/build/intermediates/res/debug/layout/goodtab.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/build/intermediates/res/debug/layout/goodtab.xml	(revision )
++++ app/build/intermediates/res/debug/layout/goodtab.xml	(revision )
+@@ -0,0 +1,72 @@
++<?xml version="1.0" encoding="utf-8"?>
++<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
++    android:layout_width="fill_parent"
++    android:layout_height="fill_parent"
++    android:orientation="vertical"
++    android:id="@+id/v1">
++
++	<LinearLayout
++	    android:layout_width="fill_parent"
++	    android:layout_height="100dp"> 
++
++		<TextView
++		    android:id="@+id/textView1"
++		    android:layout_width="wrap_content"
++		    android:layout_height="wrap_content"
++		    android:text=" Поиск " />
++
++		<EditText
++		    android:id="@+id/findText"
++		    android:layout_width="wrap_content"
++		    android:layout_height="wrap_content"
++		    android:layout_weight="1"
++		    android:ems="10" >
++
++		</EditText>
++
++		<Button
++		    android:id="@+id/bFind"
++		    android:layout_width="wrap_content"
++		    android:layout_height="wrap_content"
++		    android:text="Найти" />
++
++    </LinearLayout>
++    
++	<LinearLayout
++	    android:layout_width="wrap_content"
++	    android:layout_height="fill_parent" 
++	    android:orientation="horizontal" >
++   
++    	<LinearLayout
++	        android:layout_width="300dp"
++        	android:layout_height="fill_parent"
++        	android:orientation="vertical" 
++        	android:background="#888888" >
++
++        	<ExpandableListView
++	            android:id="@+id/expandableListView1"
++            	android:layout_width="match_parent"
++            	android:layout_height="wrap_content"
++            	android:layout_weight="0.35"
++            	android:layout_margin="1dip"
++            	android:background="#000000" >
++        	</ExpandableListView>
++    	</LinearLayout>
++
++
++    	<LinearLayout
++	        android:layout_width="fill_parent"
++        	android:layout_height="fill_parent"
++        	android:orientation="vertical" 
++        	android:background="#888888" >
++			<ListView
++	    		android:id="@+id/listGoods"
++    			android:layout_width="fill_parent"
++    			android:layout_height="fill_parent" 
++            	android:layout_margin="1dip"
++            	android:background="#000000" >
++			</ListView>        
++    	</LinearLayout>
++	</LinearLayout>
++   
++</LinearLayout><!-- From: file:/C:/Users/admin/AndroidStudioProjects/BiMan1/app/src/main/res/layout/goodtab.xml -->
+\ No newline at end of file
+Index: app/build/intermediates/res/debug/layout/listkontrs.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/build/intermediates/res/debug/layout/listkontrs.xml	(revision )
++++ app/build/intermediates/res/debug/layout/listkontrs.xml	(revision )
+@@ -0,0 +1,21 @@
++<?xml version="1.0" encoding="utf-8"?>
++<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
++    android:layout_width="fill_parent"
++    android:layout_height="fill_parent"
++    android:orientation="vertical" >
++
++    <LinearLayout 
++	    android:layout_width="match_parent"
++	    android:layout_height="50dp"
++	    android:orientation="horizontal" >
++
++    	<TextView
++	        android:id="@+id/cnm_kontr"
++        	android:layout_width="600dp"
++       		android:layout_height="wrap_content"
++        	android:textSize="25dip"
++        	android:text="TextView" />
++
++    </LinearLayout>
++	
++</LinearLayout>	<!-- From: file:/C:/Users/admin/AndroidStudioProjects/BiMan1/app/src/main/res/layout/listkontrs.xml -->
+\ No newline at end of file
+Index: app/build/intermediates/res/debug/drawable/my_border.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/build/intermediates/res/debug/drawable/my_border.xml	(revision )
++++ app/build/intermediates/res/debug/drawable/my_border.xml	(revision )
+@@ -0,0 +1,11 @@
++<?xml version="1.0" encoding="utf-8"?>
++<animation-list xmlns:android="http://schemas.android.com/apk/res/android" >
++<shape xmlns:android="http://schemas.android.com/apk/res/android">
++    <stroke android:width="4dp" android:color="#FF00FF00" />
++    
++    <padding android:left="7dp" android:top="7dp"
++            android:right="7dp" android:bottom="7dp" />
++    <corners android:radius="4dp" />
++</shape>    
++
++</animation-list><!-- From: file:/C:/Users/admin/AndroidStudioProjects/BiMan1/app/src/main/res/drawable/my_border.xml -->
+\ No newline at end of file
+Index: app/build/intermediates/res/debug/layout/kontrtab.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/build/intermediates/res/debug/layout/kontrtab.xml	(revision )
++++ app/build/intermediates/res/debug/layout/kontrtab.xml	(revision )
+@@ -0,0 +1,73 @@
++<?xml version="1.0" encoding="utf-8"?>
++<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
++    android:layout_width="fill_parent"
++    android:layout_height="fill_parent"
++    android:orientation="vertical"
++    android:id="@+id/ktab">
++    
++	<LinearLayout
++	    android:layout_width="fill_parent"
++	    android:layout_height="100dp"> 
++
++		<TextView
++		    android:id="@+id/textView1"
++		    android:layout_width="wrap_content"
++		    android:layout_height="wrap_content"
++		    android:text=" Поиск " />
++
++		<EditText
++		    android:id="@+id/findText"
++		    android:layout_width="wrap_content"
++		    android:layout_height="wrap_content"
++		    android:layout_weight="1"
++		    android:ems="10" >
++
++		</EditText>
++
++		<Button
++		    android:id="@+id/bFind"
++		    android:layout_width="wrap_content"
++		    android:layout_height="wrap_content"
++		    android:text="Найти" />
++
++    </LinearLayout>
++    
++	
++	<LinearLayout
++	    android:layout_width="wrap_content"
++	    android:layout_height="fill_parent" 
++	    android:orientation="horizontal" >
++   
++    	<LinearLayout
++	        android:layout_width="300dp"
++        	android:layout_height="fill_parent"
++        	android:orientation="vertical" 
++        	android:background="#888888" >
++
++        	<ExpandableListView
++	            android:id="@+id/expKontrs"
++            	android:layout_width="match_parent"
++            	android:layout_height="wrap_content"
++            	android:layout_weight="0.35"
++            	android:layout_margin="1dip"
++            	android:background="#000000" >
++        	</ExpandableListView>
++    	</LinearLayout>
++
++
++    	<LinearLayout
++	        android:layout_width="fill_parent"
++        	android:layout_height="fill_parent"
++        	android:orientation="vertical" 
++        	android:background="#888888" >
++			<ListView
++	    		android:id="@+id/listKontrs"
++    			android:layout_width="fill_parent"
++    			android:layout_height="fill_parent" 
++            	android:layout_margin="1dip"
++            	android:background="#000000" >
++			</ListView>        
++    	</LinearLayout>
++	</LinearLayout>
++		
++</LinearLayout><!-- From: file:/C:/Users/admin/AndroidStudioProjects/BiMan1/app/src/main/res/layout/kontrtab.xml -->
+\ No newline at end of file
+Index: .gradle/2.2.1/taskArtifacts/cache.properties
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>windows-1251
+===================================================================
+--- .gradle/2.2.1/taskArtifacts/cache.properties	(revision )
++++ .gradle/2.2.1/taskArtifacts/cache.properties	(revision )
+@@ -0,0 +1,1 @@
++#Sun Jul 26 14:28:52 MSK 2015
+Index: .gradle/2.4/taskArtifacts/cache.properties
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>windows-1251
+===================================================================
+--- .gradle/2.4/taskArtifacts/cache.properties	(revision )
++++ .gradle/2.4/taskArtifacts/cache.properties	(revision )
+@@ -0,0 +1,1 @@
++#Sun Aug 02 22:41:16 MSK 2015
+Index: app/src/main/res/layout/kontrtab.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/layout/kontrtab.xml	(revision )
++++ app/src/main/res/layout/kontrtab.xml	(revision )
+@@ -0,0 +1,73 @@
++<?xml version="1.0" encoding="utf-8"?>
++<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
++    android:layout_width="fill_parent"
++    android:layout_height="fill_parent"
++    android:orientation="vertical"
++    android:id="@+id/ktab">
++    
++	<LinearLayout
++	    android:layout_width="fill_parent"
++	    android:layout_height="100dp"> 
++
++		<TextView
++		    android:id="@+id/textView1"
++		    android:layout_width="wrap_content"
++		    android:layout_height="wrap_content"
++		    android:text=" Поиск " />
++
++		<EditText
++		    android:id="@+id/findText"
++		    android:layout_width="wrap_content"
++		    android:layout_height="wrap_content"
++		    android:layout_weight="1"
++		    android:ems="10" >
++
++		</EditText>
++
++		<Button
++		    android:id="@+id/bFind"
++		    android:layout_width="wrap_content"
++		    android:layout_height="wrap_content"
++		    android:text="Найти" />
++
++    </LinearLayout>
++    
++	
++	<LinearLayout
++	    android:layout_width="wrap_content"
++	    android:layout_height="fill_parent" 
++	    android:orientation="horizontal" >
++   
++    	<LinearLayout
++	        android:layout_width="300dp"
++        	android:layout_height="fill_parent"
++        	android:orientation="vertical" 
++        	android:background="#888888" >
++
++        	<ExpandableListView
++	            android:id="@+id/expKontrs"
++            	android:layout_width="match_parent"
++            	android:layout_height="wrap_content"
++            	android:layout_weight="0.35"
++            	android:layout_margin="1dip"
++            	android:background="#000000" >
++        	</ExpandableListView>
++    	</LinearLayout>
++
++
++    	<LinearLayout
++	        android:layout_width="fill_parent"
++        	android:layout_height="fill_parent"
++        	android:orientation="vertical" 
++        	android:background="#888888" >
++			<ListView
++	    		android:id="@+id/listKontrs"
++    			android:layout_width="fill_parent"
++    			android:layout_height="fill_parent" 
++            	android:layout_margin="1dip"
++            	android:background="#000000" >
++			</ListView>        
++    	</LinearLayout>
++	</LinearLayout>
++		
++</LinearLayout>
+\ No newline at end of file
+Index: app/src/main/res/layout/listkontrs.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/layout/listkontrs.xml	(revision )
++++ app/src/main/res/layout/listkontrs.xml	(revision )
+@@ -0,0 +1,21 @@
++<?xml version="1.0" encoding="utf-8"?>
++<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
++    android:layout_width="fill_parent"
++    android:layout_height="fill_parent"
++    android:orientation="vertical" >
++
++    <LinearLayout 
++	    android:layout_width="match_parent"
++	    android:layout_height="50dp"
++	    android:orientation="horizontal" >
++
++    	<TextView
++	        android:id="@+id/cnm_kontr"
++        	android:layout_width="600dp"
++       		android:layout_height="wrap_content"
++        	android:textSize="25dip"
++        	android:text="TextView" />
++
++    </LinearLayout>
++	
++</LinearLayout>	
+\ No newline at end of file
+Index: app/build/intermediates/res/debug/values/values.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/build/intermediates/res/debug/values/values.xml	(revision )
++++ app/build/intermediates/res/debug/values/values.xml	(revision )
+@@ -0,0 +1,7 @@
++<?xml version="1.0" encoding="utf-8"?>
++<resources>
++    <!-- From: file:/C:/Users/admin/AndroidStudioProjects/BiMan1/app/src/main/res/values/strings.xml -->
++    <eat-comment/>
++    <string name="app_name">BiMan</string>
++    <string name="hello">Hello World, BiManActivity!</string>
++</resources>
+\ No newline at end of file
+Index: app/src/main/res/layout/doctab.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/layout/doctab.xml	(revision )
++++ app/src/main/res/layout/doctab.xml	(revision )
+@@ -0,0 +1,97 @@
++<?xml version="1.0" encoding="utf-8"?>
++<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
++    android:id="@+id/dtab"
++    android:layout_width="match_parent"
++    android:layout_height="fill_parent"
++    android:orientation="vertical" >
++    
++	<LinearLayout
++	    android:layout_width="fill_parent"
++	    android:layout_height="100dp"> 
++
++		<TextView
++		    android:id="@+id/textView1"
++		    android:layout_width="wrap_content"
++		    android:layout_height="wrap_content"
++		    android:text=" Поиск " />
++
++		<EditText
++		    android:id="@+id/findText"
++		    android:layout_width="wrap_content"
++		    android:layout_height="wrap_content"
++		    android:layout_weight="1"
++		    android:ems="10" >
++
++		</EditText>
++
++		<Button
++		    android:id="@+id/bFind"
++		    android:layout_width="wrap_content"
++		    android:layout_height="wrap_content"
++		    android:text="Найти" />
++
++    </LinearLayout>
++    
++	
++	<LinearLayout
++	    android:layout_width="wrap_content"
++	    android:layout_height="fill_parent" 
++	    android:orientation="horizontal">
++
++   	<LinearLayout
++    	    android:layout_width="299dp"
++    	    android:layout_height="fill_parent"
++    	    android:background="#888888"
++    	    android:orientation="vertical" >
++
++    		<LinearLayout
++		        android:layout_width="300dp"
++        		android:layout_height="fill_parent"
++        		android:orientation="vertical"
++            	android:layout_margin="1dip"
++        		android:background="#000000" >
++
++    			<CheckBox
++    			    android:id="@+id/checkBox1"
++    			    android:layout_width="wrap_content"
++    			    android:layout_height="wrap_content"
++    			    android:text="CheckBox" />
++
++    			<Spinner
++    			    android:id="@+id/spinner_mngr"
++    			    android:layout_width="match_parent"
++    			    android:layout_height="wrap_content" />
++
++    			<Spinner
++    			    android:id="@+id/spinner_typedoc"
++    			    android:layout_width="match_parent"
++    			    android:layout_height="wrap_content" />
++
++    			<Spinner
++    			    android:id="@+id/spinner_interval"
++    			    android:layout_width="match_parent"
++    			    android:layout_height="wrap_content" />
++    						
++    						
++			</LinearLayout>
++
++    	    
++    	</LinearLayout>
++
++
++    	<LinearLayout
++	        android:layout_width="fill_parent"
++        	android:layout_height="fill_parent"
++        	android:orientation="vertical" 
++        	android:background="#888888" >
++			<ListView
++	    		android:id="@+id/listDocs"
++    			android:layout_width="fill_parent"
++    			android:layout_height="fill_parent" 
++            	android:layout_margin="1dip"
++            	android:background="#000000" >
++			</ListView>        
++    	</LinearLayout>
++	</LinearLayout>
++		
++</LinearLayout>
+\ No newline at end of file
+Index: app/build/intermediates/res/debug/layout/main.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/build/intermediates/res/debug/layout/main.xml	(revision )
++++ app/build/intermediates/res/debug/layout/main.xml	(revision )
+@@ -0,0 +1,76 @@
++<?xml version="1.0" encoding="utf-8"?>
++<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
++    xmlns:android1="http://schemas.android.com/apk/res/android"
++    android:id="@+id/v1"
++    android:layout_width="fill_parent"
++    android:layout_height="fill_parent"
++    android:orientation="vertical" >
++
++
++    <LinearLayout
++        android1:layout_width="match_parent"
++        android1:layout_height="wrap_content" >
++
++        <Button
++            android1:id="@+id/button1"
++            android1:layout_width="wrap_content"
++            android1:layout_height="wrap_content"
++            android1:text="Button" />
++
++        <Button
++            android1:id="@+id/button2"
++            android1:layout_width="wrap_content"
++            android1:layout_height="wrap_content"
++            android1:text="Button" />
++
++        <Button
++            android1:id="@+id/button3"
++            android1:layout_width="wrap_content"
++            android1:layout_height="wrap_content"
++            android1:text="Button" />
++
++    </LinearLayout>
++
++    <TabHost
++        android1:id="@android:id/tabhost"
++        android1:layout_width="match_parent"
++        android1:layout_height="611dp" >
++
++        <LinearLayout
++            android1:layout_width="match_parent"
++            android1:layout_height="match_parent"
++            android1:orientation="vertical" >
++
++            <TabWidget
++                android1:id="@android:id/tabs"
++                android1:layout_width="match_parent"
++                android1:layout_height="wrap_content" >
++            </TabWidget>
++
++            <FrameLayout
++                android1:id="@android:id/tabcontent"
++                android1:layout_width="match_parent"
++                android1:layout_height="match_parent" >
++
++                <LinearLayout
++                    android1:id="@+id/tab1"
++                    android1:layout_width="match_parent"
++                    android1:layout_height="393dp" >
++                </LinearLayout>
++
++                <LinearLayout
++                    android1:id="@+id/tab2"
++                    android1:layout_width="match_parent"
++                    android1:layout_height="match_parent" >
++                </LinearLayout>
++
++                <LinearLayout
++                    android1:id="@+id/tab3"
++                    android1:layout_width="match_parent"
++                    android1:layout_height="match_parent" >
++                </LinearLayout>
++            </FrameLayout>
++        </LinearLayout>
++    </TabHost>
++
++</LinearLayout><!-- From: file:/C:/Users/admin/AndroidStudioProjects/BiMan1/app/src/main/res/layout/main.xml -->
+\ No newline at end of file
+Index: app/src/main/res/values/strings.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/values/strings.xml	(revision )
++++ app/src/main/res/values/strings.xml	(revision )
+@@ -0,0 +1,7 @@
++<?xml version="1.0" encoding="utf-8"?>
++<resources>
++
++    <string name="hello">Hello World, BiManActivity!</string>
++    <string name="app_name">BiMan</string>
++
++</resources>
+\ No newline at end of file
+Index: app/lint.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/lint.xml	(revision )
++++ app/lint.xml	(revision )
+@@ -0,0 +1,3 @@
++<?xml version="1.0" encoding="utf-8"?>
++<lint>
++</lint>
+\ No newline at end of file
+Index: import-summary.txt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- import-summary.txt	(revision )
++++ import-summary.txt	(revision )
+@@ -0,0 +1,36 @@
++ECLIPSE ANDROID PROJECT IMPORT SUMMARY
++======================================
++
++Ignored Files:
++--------------
++The following files were *not* copied into the new Gradle project; you
++should evaluate whether these are still needed in your project and if
++so manually move them:
++
++* proguard.cfg
++
++Moved Files:
++------------
++Android Gradle projects use a different directory structure than ADT
++Eclipse projects. Here's how the projects were restructured:
++
++* AndroidManifest.xml => app\src\main\AndroidManifest.xml
++* assets\ => app\src\main\assets\
++* lint.xml => app\lint.xml
++* res\ => app\src\main\res\
++* src\ => app\src\main\java\
++
++Next Steps:
++-----------
++You can now build the project. The Gradle project needs network
++connectivity to download dependencies.
++
++Bugs:
++-----
++If for some reason your project does not build, and you determine that
++it is due to a bug or limitation of the Eclipse to Gradle importer,
++please file a bug at http://b.android.com with category
++Component-Tools.
++
++(This import summary is for your information only, and can be deleted
++after import once you are satisfied with the results.)
+Index: app/src/main/AndroidManifest.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/AndroidManifest.xml	(revision )
++++ app/src/main/AndroidManifest.xml	(revision )
+@@ -0,0 +1,22 @@
++<?xml version="1.0" encoding="utf-8"?>
++<manifest xmlns:android="http://schemas.android.com/apk/res/android"
++    package="biman.middle.kokin.ru"
++    android:versionCode="1"
++    android:versionName="1.0" >
++
++    <uses-sdk android:minSdkVersion="8" />
++
++    <application
++        android:icon="@drawable/ic_launcher"
++        android:label="@string/app_name" >
++        <activity
++            android:name=".BiManActivity"
++            android:label="@string/app_name" >
++            <intent-filter>
++                <action android:name="android.intent.action.MAIN" />
++                <category android:name="android.intent.category.LAUNCHER" />
++            </intent-filter>
++        </activity>
++    </application>
++
++</manifest>
+\ No newline at end of file
+Index: app/build/intermediates/manifests/androidTest/debug/AndroidManifest.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/build/intermediates/manifests/androidTest/debug/AndroidManifest.xml	(revision )
++++ app/build/intermediates/manifests/androidTest/debug/AndroidManifest.xml	(revision )
+@@ -0,0 +1,16 @@
++<?xml version="1.0" encoding="utf-8"?>
++<manifest xmlns:android="http://schemas.android.com/apk/res/android"
++    package="biman.middle.kokin.ru.test">
++
++    <uses-sdk android:minSdkVersion="8" android:targetSdkVersion="8" />
++
++    <application>
++        <uses-library android:name="android.test.runner" />
++    </application>
++
++    <instrumentation android:name="android.test.InstrumentationTestRunner"
++                     android:targetPackage="biman.middle.kokin.ru"
++                     android:handleProfiling="false"
++                     android:functionalTest="false"
++                     android:label="Tests for biman.middle.kokin.ru"/>
++</manifest>
+Index: app/build/intermediates/incremental/mergeAssets/androidTest/debug/merger.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/build/intermediates/incremental/mergeAssets/androidTest/debug/merger.xml	(revision )
++++ app/build/intermediates/incremental/mergeAssets/androidTest/debug/merger.xml	(revision )
+@@ -0,0 +1,2 @@
++<?xml version="1.0" encoding="utf-8"?>
++<merger version="3"><dataSet config="main"><source path="C:\Users\admin\AndroidStudioProjects\BiMan1\app\src\androidTest\assets"/></dataSet></merger>
+\ No newline at end of file
+Index: app/build/intermediates/incremental/mergeAssets/debug/merger.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/build/intermediates/incremental/mergeAssets/debug/merger.xml	(revision )
++++ app/build/intermediates/incremental/mergeAssets/debug/merger.xml	(revision )
+@@ -0,0 +1,2 @@
++<?xml version="1.0" encoding="utf-8"?>
++<merger version="3"><dataSet config="main"><source path="C:\Users\admin\AndroidStudioProjects\BiMan1\app\src\main\assets"><file name="biman.sqlite3" path="C:\Users\admin\AndroidStudioProjects\BiMan1\app\src\main\assets\biman.sqlite3"/><file name="biman1.sqlite3" path="C:\Users\admin\AndroidStudioProjects\BiMan1\app\src\main\assets\biman1.sqlite3"/><file name="biman1_1.sqlite3" path="C:\Users\admin\AndroidStudioProjects\BiMan1\app\src\main\assets\biman1_1.sqlite3"/></source></dataSet><dataSet config="debug"><source path="C:\Users\admin\AndroidStudioProjects\BiMan1\app\src\debug\assets"/></dataSet></merger>
+\ No newline at end of file
+Index: app/build/intermediates/incremental/mergeResources/debug/merger.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/build/intermediates/incremental/mergeResources/debug/merger.xml	(revision )
++++ app/build/intermediates/incremental/mergeResources/debug/merger.xml	(revision )
+@@ -0,0 +1,2 @@
++<?xml version="1.0" encoding="utf-8"?>
++<merger version="3"><dataSet config="main"><source path="C:\Users\admin\AndroidStudioProjects\BiMan1\app\src\main\res"><file name="my_border" path="C:\Users\admin\AndroidStudioProjects\BiMan1\app\src\main\res\drawable\my_border.xml" qualifiers="" type="drawable"/><file name="ic_launcher" path="C:\Users\admin\AndroidStudioProjects\BiMan1\app\src\main\res\drawable-hdpi\ic_launcher.png" qualifiers="hdpi" type="drawable"/><file name="ic_launcher" path="C:\Users\admin\AndroidStudioProjects\BiMan1\app\src\main\res\drawable-ldpi\ic_launcher.png" qualifiers="ldpi" type="drawable"/><file name="ic_launcher" path="C:\Users\admin\AndroidStudioProjects\BiMan1\app\src\main\res\drawable-mdpi\ic_launcher.png" qualifiers="mdpi" type="drawable"/><file name="doctab" path="C:\Users\admin\AndroidStudioProjects\BiMan1\app\src\main\res\layout\doctab.xml" qualifiers="" type="layout"/><file name="goodtab" path="C:\Users\admin\AndroidStudioProjects\BiMan1\app\src\main\res\layout\goodtab.xml" qualifiers="" type="layout"/><file name="gpsconfirm" path="C:\Users\admin\AndroidStudioProjects\BiMan1\app\src\main\res\layout\gpsconfirm.xml" qualifiers="" type="layout"/><file name="kontrtab" path="C:\Users\admin\AndroidStudioProjects\BiMan1\app\src\main\res\layout\kontrtab.xml" qualifiers="" type="layout"/><file name="listadapter1" path="C:\Users\admin\AndroidStudioProjects\BiMan1\app\src\main\res\layout\listadapter1.xml" qualifiers="" type="layout"/><file name="listdocs" path="C:\Users\admin\AndroidStudioProjects\BiMan1\app\src\main\res\layout\listdocs.xml" qualifiers="" type="layout"/><file name="listgoods" path="C:\Users\admin\AndroidStudioProjects\BiMan1\app\src\main\res\layout\listgoods.xml" qualifiers="" type="layout"/><file name="listkontrs" path="C:\Users\admin\AndroidStudioProjects\BiMan1\app\src\main\res\layout\listkontrs.xml" qualifiers="" type="layout"/><file name="main" path="C:\Users\admin\AndroidStudioProjects\BiMan1\app\src\main\res\layout\main.xml" qualifiers="" type="layout"/><file path="C:\Users\admin\AndroidStudioProjects\BiMan1\app\src\main\res\values\strings.xml" qualifiers=""><string name="app_name">BiMan</string><string name="hello">Hello World, BiManActivity!</string></file></source><source path="C:\Users\admin\AndroidStudioProjects\BiMan1\app\build\generated\res\rs\debug"/><source path="C:\Users\admin\AndroidStudioProjects\BiMan1\app\build\generated\res\generated\debug"/></dataSet><dataSet config="debug"><source path="C:\Users\admin\AndroidStudioProjects\BiMan1\app\src\debug\res"/></dataSet><mergedItems/></merger>
+\ No newline at end of file
+Index: app/build/intermediates/res/debug/layout/listdocs.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/build/intermediates/res/debug/layout/listdocs.xml	(revision )
++++ app/build/intermediates/res/debug/layout/listdocs.xml	(revision )
+@@ -0,0 +1,52 @@
++<?xml version="1.0" encoding="utf-8"?>
++<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
++    android:layout_width="fill_parent"
++    android:layout_height="fill_parent"
++    android:orientation="vertical" >
++
++    <LinearLayout 
++	    android:layout_width="match_parent"
++	    android:layout_height="75dp"
++	    android:orientation="horizontal" >
++
++    	<TextView
++    	    android:id="@+id/empty"
++    	    android:layout_width="20dp"
++    	    android:layout_height="wrap_content"
++    	    android:text=""
++    	    android:textSize="25dip" />
++
++    	<TextView
++    	    android:id="@+id/cnm_typedoc"
++    	    android:layout_width="200dp"
++    	    android:layout_height="wrap_content"
++    	    android:text="TextView"
++    	    android:textSize="25dip" /> 
++    	    />
++    		
++    	<TextView
++    	    android:id="@+id/cnumasis"
++    	    android:layout_width="80dp"
++    	    android:layout_height="wrap_content"
++    	    android:text="TextView"
++    	    android:textSize="25dip" />
++
++    	<TextView
++    	    android:id="@+id/ddateasis"
++    	    android:layout_width="200dp"
++    	    android:layout_height="wrap_content"
++    	    android:text="TextView"
++    	    android:textSize="25dip" /> 
++    	    />
++
++    	<TextView
++    	    android:id="@+id/cnm_kontr"
++    	    android:layout_width="200dp"
++    	    android:layout_height="wrap_content"
++    	    android:text="TextView"
++    	    android:textSize="25dip" /> 
++    	    />
++
++    </LinearLayout>
++	
++</LinearLayout>	<!-- From: file:/C:/Users/admin/AndroidStudioProjects/BiMan1/app/src/main/res/layout/listdocs.xml -->
+\ No newline at end of file
+Index: app/build/generated/source/r/debug/biman/middle/kokin/ru/R.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/build/generated/source/r/debug/biman/middle/kokin/ru/R.java	(revision )
++++ app/build/generated/source/r/debug/biman/middle/kokin/ru/R.java	(revision )
+@@ -0,0 +1,75 @@
++/* AUTO-GENERATED FILE.  DO NOT MODIFY.
++ *
++ * This class was automatically generated by the
++ * aapt tool from the resource data it found.  It
++ * should not be modified by hand.
++ */
++
++package biman.middle.kokin.ru;
++
++public final class R {
++    public static final class attr {
++    }
++    public static final class drawable {
++        public static final int ic_launcher=0x7f020000;
++        public static final int my_border=0x7f020001;
++    }
++    public static final class id {
++        public static final int bFind=0x7f050003;
++        public static final int brand=0x7f05001a;
++        public static final int button1=0x7f050023;
++        public static final int button2=0x7f050024;
++        public static final int button3=0x7f050025;
++        public static final int captcost=0x7f05001b;
++        public static final int captnOSTFree=0x7f050021;
++        public static final int captnOSTReserv=0x7f05001f;
++        public static final int captnOSTTotal=0x7f05001d;
++        public static final int checkBox1=0x7f050004;
++        public static final int cnm_good=0x7f050019;
++        public static final int cnm_goodart=0x7f050018;
++        public static final int cnm_kontr=0x7f050017;
++        public static final int cnm_typedoc=0x7f050014;
++        public static final int cnumasis=0x7f050015;
++        public static final int cost=0x7f05001c;
++        public static final int ddateasis=0x7f050016;
++        public static final int dtab=0x7f050000;
++        public static final int empty=0x7f050013;
++        public static final int expKontrs=0x7f050011;
++        public static final int expandableListView1=0x7f05000a;
++        public static final int findText=0x7f050002;
++        public static final int gps_bOK=0x7f05000f;
++        public static final int gps_text1=0x7f05000c;
++        public static final int gps_text2=0x7f05000d;
++        public static final int ktab=0x7f050010;
++        public static final int linearLayout1=0x7f05000e;
++        public static final int listDocs=0x7f050008;
++        public static final int listGoods=0x7f05000b;
++        public static final int listKontrs=0x7f050012;
++        public static final int nOSTFree=0x7f050022;
++        public static final int nOSTReserv=0x7f050020;
++        public static final int nOSTTotal=0x7f05001e;
++        public static final int spinner_interval=0x7f050007;
++        public static final int spinner_mngr=0x7f050005;
++        public static final int spinner_typedoc=0x7f050006;
++        public static final int tab1=0x7f050026;
++        public static final int tab2=0x7f050027;
++        public static final int tab3=0x7f050028;
++        public static final int textView1=0x7f050001;
++        public static final int v1=0x7f050009;
++    }
++    public static final class layout {
++        public static final int doctab=0x7f030000;
++        public static final int goodtab=0x7f030001;
++        public static final int gpsconfirm=0x7f030002;
++        public static final int kontrtab=0x7f030003;
++        public static final int listadapter1=0x7f030004;
++        public static final int listdocs=0x7f030005;
++        public static final int listgoods=0x7f030006;
++        public static final int listkontrs=0x7f030007;
++        public static final int main=0x7f030008;
++    }
++    public static final class string {
++        public static final int app_name=0x7f040000;
++        public static final int hello=0x7f040001;
++    }
++}
+Index: settings.gradle
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- settings.gradle	(revision )
++++ settings.gradle	(revision )
+@@ -0,0 +1,1 @@
++include ':app'
+Index: app/src/main/java/biman/middle/kokin/ru/DatabaseHelper.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/biman/middle/kokin/ru/DatabaseHelper.java	(revision )
++++ app/src/main/java/biman/middle/kokin/ru/DatabaseHelper.java	(revision )
+@@ -0,0 +1,71 @@
++package biman.middle.kokin.ru;
++
++import android.content.Context;
++import android.database.Cursor;
++import android.database.sqlite.SQLiteDatabase;
++import android.database.sqlite.SQLiteOpenHelper;
++
++public class DatabaseHelper extends SQLiteOpenHelper {
++	 
++	 static final String dbName="demoDB";
++	 static final String employeeTable="Employees";
++	 static final String colID="EmployeeID";
++	 static final String colName="EmployeeName";
++	 static final String colAge="Age";
++	 static final String colDept="Dept";
++	 
++	 static final String deptTable="Dept";
++	 static final String colDeptID="DeptID";
++	 static final String colDeptName="DeptName";
++	 
++	 static final String viewEmps="ViewEmps";
++	 
++	 //� �������� �����������
++	 
++	 public DatabaseHelper(Context context) {
++		 super(context, dbName, null,35);
++	 }
++
++	@Override
++	public void onCreate(SQLiteDatabase db) {
++		// TODO Auto-generated method stub
++
++		  db.execSQL(	"CREATE TABLE aaa ("+
++			        	"col1 TEXT, "+
++			        	"col2 TEXT)");		
++	}
++
++	@Override
++	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
++		// TODO Auto-generated method stub
++		db.execSQL("DROP TABLE IF EXISTS aaa");
++		onCreate(db);
++	}
++	
++	public void insert1() {
++		SQLiteDatabase db=this.getWritableDatabase();
++		//for (int i=0; i<100000;i++) {
++		//	db.execSQL("insert into aaa values(\"1\", \"abcde\")");
++		//}
++	
++	}
++
++	public String getCol2() {
++		String res=""; 
++		SQLiteDatabase db=this.getReadableDatabase();
++
++		/*
++		Cursor cur=db.rawQuery("select * from aaa",new String [] {});
++		cur.moveToFirst();
++		res = cur.getString(cur.getColumnIndex("col2"));
++		*/
++		Cursor cur=db.rawQuery("select count(*) co from aaa",new String [] {});
++		cur.moveToFirst();
++		res = Integer.toString( cur.getInt(0));
++		
++		return (res);
++	
++	}
++	
++	
++}
+\ No newline at end of file
+Index: app/src/main/java/biman/middle/kokin/ru/ProcessHTTP.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/biman/middle/kokin/ru/ProcessHTTP.java	(revision )
++++ app/src/main/java/biman/middle/kokin/ru/ProcessHTTP.java	(revision )
+@@ -0,0 +1,304 @@
++package biman.middle.kokin.ru;
++
++import java.io.InputStream;
++
++import javax.xml.parsers.DocumentBuilder;
++import javax.xml.parsers.DocumentBuilderFactory;
++import javax.xml.xpath.XPath;
++import javax.xml.xpath.XPathConstants;
++import javax.xml.xpath.XPathExpression;
++import javax.xml.xpath.XPathFactory;
++
++import org.apache.http.HttpEntity;
++import org.apache.http.HttpResponse;
++import org.apache.http.client.HttpClient;
++import org.apache.http.client.methods.HttpPost;
++import org.apache.http.entity.StringEntity;
++import org.apache.http.impl.client.DefaultHttpClient;
++import org.apache.http.protocol.HTTP;
++import org.w3c.dom.Document;
++import org.w3c.dom.NodeList;
++
++import biman.middle.kokin.ru.GPSConfirm;
++
++import android.app.Activity;
++import android.content.Context;
++import android.content.Intent;
++import android.content.SharedPreferences;
++import android.location.LocationManager;
++import android.os.Bundle;
++import android.widget.Toast;
++
++public class ProcessHTTP /*extends Activity*/ {
++
++	/** ���������� ��� ���������� ������� � ������� */
++  	private HttpClient client = new DefaultHttpClient();
++  	/** �������� XML  */	  	
++  	private static Document doc;
++  	/** ����� ��� ������ � XML  */
++  	private XPath xpath = null ;
++  	/** ��������� XML  */	  	
++  	private static XPathExpression expr;
++  	/** ��������� ���������� ��������� XML  */
++  	private static Object resultEval;
++  	/** ������ ��������� ����� */
++  	private static NodeList nodes;
++  	
++  	private HttpPost httpPost;      // HTTP ����������
++  	HttpResponse response;			// response �� POST
++
++    SharedPreferences preferences;
++    SharedPreferences.Editor editor;
++    int gpstype;
++    Intent intent;
++    Context context;
++	LocationManager myManager;  // �������� ����� GPS
++	
++  	
++  	/**
++  	 * ������� ����������
++  	 * @param sURL
++  	 */
++	public ProcessHTTP(String sURL) {
++
++		httpPost = new HttpPost(sURL);
++
++        //gpstype = preferences.getInt("JPStype", 0);
++		}
++	
++	/**
++	 * ���������� POST ������
++	 */
++	public void executePost() {
++
++ 
++		try {
++		if (context!=null) {
++		try {
++			if ((gpstype==0)||(gpstype==1)||(gpstype==2)) {
++			myManager = (LocationManager) context.getSystemService(context.LOCATION_SERVICE);
++			//Toast.makeText(context, "getStatusGPS()"+(myManager.isProviderEnabled("gps")?"1":"0"), Toast.LENGTH_LONG).show();
++			
++			if (!myManager.isProviderEnabled("gps")) {
++				String messtoact = "GPS �� �������";
++				if (gpstype==0) {
++					Toast.makeText(context , messtoact, Toast.LENGTH_LONG).show();
++				} else {
++					intent = new Intent(context, GPSConfirm.class);
++					intent.putExtra("gpstype", gpstype);
++					intent.putExtra("messtoact", messtoact);				
++					intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
++					context.startActivity(intent);
++					if (gpstype==2) {
++						editor.putInt("gpsStop", 1);
++						return;
++					}
++				}
++			} else {
++				if (preferences.getFloat("lat", 0)==0 ) {
++					String messtoact = "����������� �� ������������� GPS ����������";
++					if (gpstype==0) {
++						Toast.makeText(context, messtoact, Toast.LENGTH_LONG).show();
++					} else {
++						intent = new Intent(context, GPSConfirm.class);
++						intent.putExtra("gpstype", gpstype);
++						intent.putExtra("messtoact", messtoact);				
++						intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
++						context.startActivity(intent);
++						if (gpstype==2) {
++							editor.putInt("gpsStop", 1);
++							return;
++						}
++					}
++				}
++			}
++			}
++		} catch(Exception e) {
++			System.out.println("getStatusGPS error!: "+e);
++			return;
++		}
++		}
++		
++		
++		try {
++			//response = client.execute(httpPost);
++		} catch(Exception e) {
++			response = null;
++			System.out.println("Post error!: "+e);
++			Toast.makeText(context, "Post error!: "+e, Toast.LENGTH_LONG).show();
++		}
++		
++		
++    	} catch (Exception e) {
++    		String se="ProcessHTTP:executePost: "+e;
++    		System.out.println(se);
++    		Toast.makeText(context, se, Toast.LENGTH_LONG).show(); 
++    	}
++		
++	}
++
++	/**
++	 * �������� XML ��������� � �������, ����������� � ��������
++	 * @param xmlContentToSend
++	 * @param debug
++	 * @return
++	 */
++	
++	public XPath getXML0(String xmlContentToSend, int debug, SharedPreferences pref, Context cont) {
++		return null;
++	}
++	
++	public XPath getXML(String xmlContentToSend, int debug, SharedPreferences pref, Context cont) {
++		//Toast.makeText(cont, "getXML 1", Toast.LENGTH_LONG).show();
++
++		//CMTRLog cmtrlog = new CMTRLog(cont);
++    	//cmtrlog.writeLog("xmlContentToSend=" + xmlContentToSend);
++
++    	xpath = null;
++		try {
++			
++			context = cont;
++			preferences = pref;
++			StringEntity entityXML = new StringEntity(xmlContentToSend, HTTP.UTF_8);
++			entityXML.setContentType("application/xml");
++			//Toast.makeText(context, "getXML 2", Toast.LENGTH_LONG).show();			
++
++			httpPost.addHeader("Accept", "text/xml");
++			httpPost.addHeader("Content-Type", "application/xml");
++			httpPost.setEntity(entityXML);
++			//Toast.makeText(context, "getXML 3", Toast.LENGTH_LONG).show();		
++			gpstype = preferences.getInt("JPStype", 0); 
++			
++			try {
++				executePost();
++    		} catch (Exception e) {
++        		String se="ProcessHTTP: 1 getXML: "+e;
++        		System.out.println(se);
++        		Toast.makeText(context, se, Toast.LENGTH_LONG).show(); 
++    		}
++			if (gpstype==2) {
++				return null;
++			}
++			
++			if (response!=null) {   
++			
++			HttpEntity entity = response.getEntity();
++			
++			if (entity != null) {
++				InputStream inputStream = null;
++				try {
++					inputStream = entity.getContent();
++					inputStream.mark(0);
++
++					// ����� XML
++					
++					if (debug==1) {
++						int ch;
++						String sss="";
++						for (int total = 0; ( ch = inputStream.read()) != -1; total++) {
++							sss +=(char)ch;
++			        		}
++			        
++						System.out.println("sss="+sss);
++						System.out.println("/sss");
++					
++						//inputStream = entity.getContent();
++						inputStream.reset();
++					}
++					
++					DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
++					factory.setNamespaceAware(true); // never forget this!
++					DocumentBuilder builder = factory.newDocumentBuilder();
++					doc = builder.parse(inputStream);
++					XPathFactory xpfactory = XPathFactory.newInstance();
++					xpath = xpfactory.newXPath();
++			
++				} catch (Exception e) {
++		    		String se="ProcessHTTP: 4 getXML: responce=null!!!";
++		    		System.out.println(se);
++		    		Toast.makeText(cont, se, Toast.LENGTH_LONG).show(); 
++					}
++				}
++			} else {
++	    		String se="ProcessHTTP: 2 getXML: responce=null!!!";
++	    		System.out.println(se);
++	    		Toast.makeText(cont, se, Toast.LENGTH_LONG).show(); 
++				
++			}
++			
++			
++    	} catch (Exception e) {
++    		String se="ProcessHTTP: 3 getXML: "+e;
++    		System.out.println(se);
++    		Toast.makeText(cont, se, Toast.LENGTH_LONG).show(); 
++    	}
++
++		return xpath;
++	}
++
++
++	/**
++	 * ���������� ����� (mask) � ���������
++	 * @param mask
++	 * @return
++	 */
++	public int countNodes(String mask) {
++		try {
++			expr = xpath.compile(mask);
++			resultEval = expr.evaluate(doc, XPathConstants.NODESET);
++			nodes = (NodeList) resultEval;
++		} catch (Exception e) {
++			System.out.println(e);
++		}
++		return nodes.getLength();
++	}
++
++	/**
++	 * ������� ������ ����� 
++	 * @param mask
++	 * @return
++	 */
++    public String[] getNodesA(String mask) {
++    	String[] ss={""};
++    	try {
++    		expr = xpath.compile(mask);
++    		resultEval = expr.evaluate(doc, XPathConstants.NODESET);
++    		nodes = (NodeList) resultEval;
++    		ss=new String[nodes.getLength()];
++    		for (int i = 0; i < nodes.getLength(); i++) {
++    			ss[i]=nodes.item(i).getNodeValue();
++
++	    		}
++    	} catch (Exception e) {
++    		System.out.println(e);
++    	}
++	    
++	    return ss;
++	    
++    }
++	
++	
++  	/**
++	 * ������� ����
++  	 * @param mask ����� ������ �����
++  	 */
++    public String getNodes(String mask) {
++    	String ss="";
++    	try {
++    		expr = xpath.compile(mask);
++    		resultEval = expr.evaluate(doc, XPathConstants.NODESET);
++    		nodes = (NodeList) resultEval;
++    		for (int i = 0; i < nodes.getLength(); i++) {
++    			ss+=nodes.item(i).getNodeValue();
++ 
++	    		}
++    	} catch (Exception e) {
++    		System.out.println(e);
++    	}
++	    
++	    return ss;
++	    
++    }
++	
++	
++}
+Index: app/src/main/java/biman/middle/kokin/ru/SetSpinner.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/biman/middle/kokin/ru/SetSpinner.java	(revision )
++++ app/src/main/java/biman/middle/kokin/ru/SetSpinner.java	(revision )
+@@ -0,0 +1,41 @@
++package biman.middle.kokin.ru;
++
++import android.database.Cursor;
++import android.database.sqlite.SQLiteDatabase;
++import android.widget.ArrayAdapter;
++import android.widget.Spinner;
++
++public class SetSpinner {
++	Spinner s1;
++	String[] arr;
++	String[] arrID;
++
++	public SetSpinner(SQLiteDatabase database, String sql, BiManActivity ba, int spinner) {
++		Cursor cursor = database.rawQuery(sql, new String [] {});
++		
++		int nnn=cursor.getCount();
++		int ix_Cursor=0;
++		arr   = new String[nnn];
++		arrID = new String[nnn];
++		cursor.moveToFirst();
++		if(!cursor.isAfterLast()) {
++			do {
++				arrID[ix_Cursor]=cursor.getString(0);
++				arr[ix_Cursor]=cursor.getString(1);
++				
++				ix_Cursor++;
++				
++			} while (cursor.moveToNext());
++		}
++		cursor.close();							
++		
++		s1 = (Spinner) ba.findViewById(spinner);
++        ArrayAdapter<String> adapter = new ArrayAdapter<String>(ba,
++	                android.R.layout.simple_spinner_item, arr);
++        
++        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
++        s1.setAdapter(adapter);		
++		
++	}
++	
++}
+Index: app/src/main/java/biman/middle/kokin/ru/ExternalDbOpenHelper.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/biman/middle/kokin/ru/ExternalDbOpenHelper.java	(revision )
++++ app/src/main/java/biman/middle/kokin/ru/ExternalDbOpenHelper.java	(revision )
+@@ -0,0 +1,113 @@
++package biman.middle.kokin.ru;
++
++import java.io.FileOutputStream;
++import java.io.IOException;
++import java.io.InputStream;
++import java.io.OutputStream;
++
++import android.content.Context;
++import android.database.SQLException;
++import android.database.sqlite.SQLiteDatabase;
++import android.database.sqlite.SQLiteOpenHelper;
++import android.util.Log;
++
++public class ExternalDbOpenHelper extends SQLiteOpenHelper {
++
++	//���� � ����� � ������ �� ����������
++	public static String DB_PATH;
++	//��� ����� � �����
++	public static String DB_NAME;
++	
++	public SQLiteDatabase database;
++	public final Context context;
++
++	public SQLiteDatabase getDb() {
++		return database;
++	}
++
++	public ExternalDbOpenHelper(Context context, String databaseName) {
++		super(context, databaseName, null, 1);
++		this.context = context;
++		//�������� ������ ���� � ����� ��� ������ ����������
++		String packageName = context.getPackageName();
++		DB_PATH = String.format("//data//data//%s//databases//", packageName);
++		DB_NAME = databaseName;
++		openDataBase();
++	}
++
++	//������� ����, ���� ��� �� �������
++	public void createDataBase() {
++		boolean dbExist = checkDataBase();
++		if (!dbExist) {
++			this.getReadableDatabase();
++			try {
++				copyDataBase();
++			} catch (IOException e) {
++				Log.e(this.getClass().toString(), "Copying error");
++				throw new Error("Error copying database!");
++			}
++		} else {
++			Log.i(this.getClass().toString(), "Database already exists");
++		}
++	}
++	//�������� ������������� ���� ������
++	private boolean checkDataBase() {
++		SQLiteDatabase checkDb = null;
++		try {
++			String path = DB_PATH + DB_NAME;
++			checkDb = SQLiteDatabase.openDatabase(path, null,
++					SQLiteDatabase.OPEN_READONLY);
++		} catch (SQLException e) {
++			Log.e(this.getClass().toString(), "Error while checking db");
++		}
++		//������� �� ����� ������ ��������, ��� ������ �����������
++		if (checkDb != null) {
++			checkDb.close();
++		}
++		return checkDb != null;
++	}
++	//����� ����������� ����
++	private void copyDataBase() throws IOException {
++		// ��������� ����� ��� ������ �� ��� ��������� ���� ��
++		//�������� � assets
++		InputStream externalDbStream = context.getAssets().open(DB_NAME);
++
++		// ���� � ��� ��������� ������ ���� � ��������
++		String outFileName = DB_PATH + DB_NAME;
++
++		// ������ �������� ����� ��� ������ � ��� �� ��������
++		OutputStream localDbStream = new FileOutputStream(outFileName);
++
++		// ����������, �����������
++		byte[] buffer = new byte[1024];
++		int bytesRead;
++		while ((bytesRead = externalDbStream.read(buffer)) > 0) {
++			localDbStream.write(buffer, 0, bytesRead);
++		}
++		// �� ����� �������� ���������� (���������) � ������� ������
++		localDbStream.close();
++		externalDbStream.close();
++
++	}
++
++	public SQLiteDatabase openDataBase() throws SQLException {
++		String path = DB_PATH + DB_NAME;
++		if (database == null) {
++			createDataBase();
++			database = SQLiteDatabase.openDatabase(path, null,
++				SQLiteDatabase.OPEN_READWRITE);
++		}
++		return database;
++	}
++	@Override
++	public synchronized void close() {
++		if (database != null) {
++			database.close();
++		}
++		super.close();
++	}
++	@Override
++	public void onCreate(SQLiteDatabase db) {}
++	@Override
++	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {}
++}
+Index: app/src/main/res/layout/main.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/layout/main.xml	(revision )
++++ app/src/main/res/layout/main.xml	(revision )
+@@ -0,0 +1,76 @@
++<?xml version="1.0" encoding="utf-8"?>
++<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
++    xmlns:android1="http://schemas.android.com/apk/res/android"
++    android:id="@+id/v1"
++    android:layout_width="fill_parent"
++    android:layout_height="fill_parent"
++    android:orientation="vertical" >
++
++
++    <LinearLayout
++        android1:layout_width="match_parent"
++        android1:layout_height="wrap_content" >
++
++        <Button
++            android1:id="@+id/button1"
++            android1:layout_width="wrap_content"
++            android1:layout_height="wrap_content"
++            android1:text="Button" />
++
++        <Button
++            android1:id="@+id/button2"
++            android1:layout_width="wrap_content"
++            android1:layout_height="wrap_content"
++            android1:text="Button" />
++
++        <Button
++            android1:id="@+id/button3"
++            android1:layout_width="wrap_content"
++            android1:layout_height="wrap_content"
++            android1:text="Button" />
++
++    </LinearLayout>
++
++    <TabHost
++        android1:id="@android:id/tabhost"
++        android1:layout_width="match_parent"
++        android1:layout_height="611dp" >
++
++        <LinearLayout
++            android1:layout_width="match_parent"
++            android1:layout_height="match_parent"
++            android1:orientation="vertical" >
++
++            <TabWidget
++                android1:id="@android:id/tabs"
++                android1:layout_width="match_parent"
++                android1:layout_height="wrap_content" >
++            </TabWidget>
++
++            <FrameLayout
++                android1:id="@android:id/tabcontent"
++                android1:layout_width="match_parent"
++                android1:layout_height="match_parent" >
++
++                <LinearLayout
++                    android1:id="@+id/tab1"
++                    android1:layout_width="match_parent"
++                    android1:layout_height="393dp" >
++                </LinearLayout>
++
++                <LinearLayout
++                    android1:id="@+id/tab2"
++                    android1:layout_width="match_parent"
++                    android1:layout_height="match_parent" >
++                </LinearLayout>
++
++                <LinearLayout
++                    android1:id="@+id/tab3"
++                    android1:layout_width="match_parent"
++                    android1:layout_height="match_parent" >
++                </LinearLayout>
++            </FrameLayout>
++        </LinearLayout>
++    </TabHost>
++
++</LinearLayout>
+\ No newline at end of file
+Index: app/src/main/res/layout/listgoods.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/layout/listgoods.xml	(revision )
++++ app/src/main/res/layout/listgoods.xml	(revision )
+@@ -0,0 +1,95 @@
++<?xml version="1.0" encoding="utf-8"?>
++
++<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
++    android:layout_width="fill_parent"
++    android:layout_height="fill_parent"
++    android:orientation="vertical" >
++
++    <LinearLayout 
++	    android:layout_width="match_parent"
++	    android:layout_height="50dp"
++	    android:orientation="horizontal" >
++
++    	<TextView
++	        android:id="@+id/cnm_goodart"
++        	android:layout_width="110dp"
++        	android:layout_height="wrap_content"
++        	android:textSize="20dip"
++        	android:text="TextView" />
++
++    	<TextView
++	        android:id="@+id/cnm_good"
++        	android:layout_width="600dp"
++        	android:layout_height="wrap_content"
++        	android:textSize="25dip"
++        	android:text="TextView" />
++
++    	<TextView
++	        android:id="@+id/brand"
++        	android:layout_width="150dp"
++        	android:layout_height="wrap_content"
++        	android:textSize="20dip"
++        	android:text="" />
++    		
++    	
++    </LinearLayout>
++    
++	<LinearLayout 
++	    android:layout_width="match_parent"
++	    android:layout_height="100dp"
++	    android:orientation="horizontal" >
++
++    	<TextView
++	        android:id="@+id/captcost"
++        	android:layout_width="50dp"
++        	android:layout_height="wrap_content"
++        	android:textSize="20dip"
++        	android:text=" Цена:" />
++    	<TextView
++	        android:id="@+id/cost"
++        	android:layout_width="100dp"
++        	android:layout_height="wrap_content"
++        	android:textSize="25dip"
++        	android:text="TextView" />
++    	
++    	<TextView
++	        android:id="@+id/captnOSTTotal"
++        	android:layout_width="50dp"
++        	android:layout_height="wrap_content"
++        	android:textSize="20dip"
++        	android:text="Нал.:" />
++    	<TextView
++	        android:id="@+id/nOSTTotal"
++        	android:layout_width="100dp"
++        	android:layout_height="wrap_content"
++        	android:textSize="25dip"
++        	android:text="TextView" />
++
++    	<TextView
++	        android:id="@+id/captnOSTReserv"
++        	android:layout_width="50dp"
++        	android:layout_height="wrap_content"
++        	android:textSize="20dip"
++        	android:text="рез.:" />
++    	<TextView
++	        android:id="@+id/nOSTReserv"
++        	android:layout_width="100dp"
++        	android:layout_height="wrap_content"
++        	android:textSize="25dip"
++        	android:text="TextView" />
++
++    	<TextView
++	        android:id="@+id/captnOSTFree"
++        	android:layout_width="50dp"
++        	android:layout_height="wrap_content"
++        	android:textSize="20dip"
++        	android:text="св.:" />
++    	<TextView
++	        android:id="@+id/nOSTFree"
++        	android:layout_width="100dp"
++        	android:layout_height="wrap_content"
++        	android:textSize="25dip"
++        	android:text="TextView" />
++	</LinearLayout>
++	
++</LinearLayout>	
+\ No newline at end of file
+Index: .idea/misc.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- .idea/misc.xml	(revision )
++++ .idea/misc.xml	(revision )
+@@ -0,0 +1,46 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<project version="4">
++  <component name="EntryPointsManager">
++    <entry_points version="2.0" />
++  </component>
++  <component name="NullableNotNullManager">
++    <option name="myDefaultNullable" value="android.support.annotation.Nullable" />
++    <option name="myDefaultNotNull" value="android.support.annotation.NonNull" />
++    <option name="myNullables">
++      <value>
++        <list size="4">
++          <item index="0" class="java.lang.String" itemvalue="org.jetbrains.annotations.Nullable" />
++          <item index="1" class="java.lang.String" itemvalue="javax.annotation.Nullable" />
++          <item index="2" class="java.lang.String" itemvalue="edu.umd.cs.findbugs.annotations.Nullable" />
++          <item index="3" class="java.lang.String" itemvalue="android.support.annotation.Nullable" />
++        </list>
++      </value>
++    </option>
++    <option name="myNotNulls">
++      <value>
++        <list size="4">
++          <item index="0" class="java.lang.String" itemvalue="org.jetbrains.annotations.NotNull" />
++          <item index="1" class="java.lang.String" itemvalue="javax.annotation.Nonnull" />
++          <item index="2" class="java.lang.String" itemvalue="edu.umd.cs.findbugs.annotations.NonNull" />
++          <item index="3" class="java.lang.String" itemvalue="android.support.annotation.NonNull" />
++        </list>
++      </value>
++    </option>
++  </component>
++  <component name="ProjectLevelVcsManager" settingsEditedManually="false">
++    <OptionsSetting value="true" id="Add" />
++    <OptionsSetting value="true" id="Remove" />
++    <OptionsSetting value="true" id="Checkout" />
++    <OptionsSetting value="true" id="Update" />
++    <OptionsSetting value="true" id="Status" />
++    <OptionsSetting value="true" id="Edit" />
++    <ConfirmationsSetting value="0" id="Add" />
++    <ConfirmationsSetting value="0" id="Remove" />
++  </component>
++  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_6" default="true" assert-keyword="true" jdk-15="true" project-jdk-name="Android API 22 Platform" project-jdk-type="Android SDK">
++    <output url="file://$PROJECT_DIR$/build/classes" />
++  </component>
++  <component name="ProjectType">
++    <option name="id" value="Android" />
++  </component>
++</project>
+\ No newline at end of file
+Index: BiMan1.iml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- BiMan1.iml	(revision )
++++ BiMan1.iml	(revision )
+@@ -0,0 +1,19 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<module external.linked.project.id="BiMan1" external.linked.project.path="$MODULE_DIR$" external.root.project.path="$MODULE_DIR$" external.system.id="GRADLE" external.system.module.group="" external.system.module.version="unspecified" type="JAVA_MODULE" version="4">
++  <component name="FacetManager">
++    <facet type="java-gradle" name="Java-Gradle">
++      <configuration>
++        <option name="BUILD_FOLDER_PATH" value="$MODULE_DIR$/build" />
++        <option name="BUILDABLE" value="false" />
++      </configuration>
++    </facet>
++  </component>
++  <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_6" inherit-compiler-output="true">
++    <exclude-output />
++    <content url="file://$MODULE_DIR$">
++      <excludeFolder url="file://$MODULE_DIR$/.gradle" />
++    </content>
++    <orderEntry type="inheritedJdk" />
++    <orderEntry type="sourceFolder" forTests="false" />
++  </component>
++</module>
+\ No newline at end of file
+Index: app/build/intermediates/manifests/full/debug/AndroidManifest.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/build/intermediates/manifests/full/debug/AndroidManifest.xml	(revision )
++++ app/build/intermediates/manifests/full/debug/AndroidManifest.xml	(revision )
+@@ -0,0 +1,25 @@
++<?xml version="1.0" encoding="utf-8"?>
++<manifest xmlns:android="http://schemas.android.com/apk/res/android"
++    package="biman.middle.kokin.ru"
++    android:versionCode="1"
++    android:versionName="1.0" >
++
++    <uses-sdk
++        android:minSdkVersion="8"
++        android:targetSdkVersion="8" />
++
++    <application
++        android:icon="@drawable/ic_launcher"
++        android:label="@string/app_name" >
++        <activity
++            android:name="biman.middle.kokin.ru.BiManActivity"
++            android:label="@string/app_name" >
++            <intent-filter>
++                <action android:name="android.intent.action.MAIN" />
++
++                <category android:name="android.intent.category.LAUNCHER" />
++            </intent-filter>
++        </activity>
++    </application>
++
++</manifest>
+\ No newline at end of file
+Index: app/src/main/res/layout/listdocs.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/layout/listdocs.xml	(revision )
++++ app/src/main/res/layout/listdocs.xml	(revision )
+@@ -0,0 +1,52 @@
++<?xml version="1.0" encoding="utf-8"?>
++<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
++    android:layout_width="fill_parent"
++    android:layout_height="fill_parent"
++    android:orientation="vertical" >
++
++    <LinearLayout 
++	    android:layout_width="match_parent"
++	    android:layout_height="75dp"
++	    android:orientation="horizontal" >
++
++    	<TextView
++    	    android:id="@+id/empty"
++    	    android:layout_width="20dp"
++    	    android:layout_height="wrap_content"
++    	    android:text=""
++    	    android:textSize="25dip" />
++
++    	<TextView
++    	    android:id="@+id/cnm_typedoc"
++    	    android:layout_width="200dp"
++    	    android:layout_height="wrap_content"
++    	    android:text="TextView"
++    	    android:textSize="25dip" /> 
++    	    />
++    		
++    	<TextView
++    	    android:id="@+id/cnumasis"
++    	    android:layout_width="80dp"
++    	    android:layout_height="wrap_content"
++    	    android:text="TextView"
++    	    android:textSize="25dip" />
++
++    	<TextView
++    	    android:id="@+id/ddateasis"
++    	    android:layout_width="200dp"
++    	    android:layout_height="wrap_content"
++    	    android:text="TextView"
++    	    android:textSize="25dip" /> 
++    	    />
++
++    	<TextView
++    	    android:id="@+id/cnm_kontr"
++    	    android:layout_width="200dp"
++    	    android:layout_height="wrap_content"
++    	    android:text="TextView"
++    	    android:textSize="25dip" /> 
++    	    />
++
++    </LinearLayout>
++	
++</LinearLayout>	
+\ No newline at end of file
+Index: .idea/gradle.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- .idea/gradle.xml	(revision )
++++ .idea/gradle.xml	(revision )
+@@ -0,0 +1,19 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<project version="4">
++  <component name="GradleSettings">
++    <option name="linkedExternalProjectsSettings">
++      <GradleProjectSettings>
++        <option name="distributionType" value="LOCAL" />
++        <option name="externalProjectPath" value="$PROJECT_DIR$" />
++        <option name="gradleHome" value="C:\Program Files\Android\Android Studio\gradle\gradle-2.4" />
++        <option name="gradleJvm" value="1.7" />
++        <option name="modules">
++          <set>
++            <option value="$PROJECT_DIR$" />
++            <option value="$PROJECT_DIR$/app" />
++          </set>
++        </option>
++      </GradleProjectSettings>
++    </option>
++  </component>
++</project>
+\ No newline at end of file
+Index: app/build/outputs/logs/manifest-merger-debug-report.txt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/build/outputs/logs/manifest-merger-debug-report.txt	(revision )
++++ app/build/outputs/logs/manifest-merger-debug-report.txt	(revision )
+@@ -0,0 +1,46 @@
++-- Merging decision tree log ---
++manifest
++ADDED from AndroidManifest.xml:2:1
++	xmlns:android
++		ADDED from AndroidManifest.xml:2:11
++	package
++		ADDED from AndroidManifest.xml:3:5
++		INJECTED from AndroidManifest.xml:0:0
++		INJECTED from AndroidManifest.xml:0:0
++	android:versionName
++		ADDED from AndroidManifest.xml:5:5
++	android:versionCode
++		ADDED from AndroidManifest.xml:4:5
++		INJECTED from AndroidManifest.xml:0:0
++		INJECTED from AndroidManifest.xml:0:0
++uses-sdk
++ADDED from AndroidManifest.xml:7:5
++	android:targetSdkVersion
++		INJECTED from AndroidManifest.xml:0:0
++		INJECTED from AndroidManifest.xml:0:0
++	android:minSdkVersion
++		ADDED from AndroidManifest.xml:7:15
++		INJECTED from AndroidManifest.xml:0:0
++		INJECTED from AndroidManifest.xml:0:0
++application
++ADDED from AndroidManifest.xml:9:5
++	android:label
++		ADDED from AndroidManifest.xml:11:9
++	android:icon
++		ADDED from AndroidManifest.xml:10:9
++activity#biman.middle.kokin.ru.BiManActivity
++ADDED from AndroidManifest.xml:12:9
++	android:label
++		ADDED from AndroidManifest.xml:14:13
++	android:name
++		ADDED from AndroidManifest.xml:13:13
++intent-filter#android.intent.action.MAIN+android.intent.category.LAUNCHER
++ADDED from AndroidManifest.xml:15:13
++action#android.intent.action.MAIN
++ADDED from AndroidManifest.xml:16:17
++	android:name
++		ADDED from AndroidManifest.xml:16:25
++category#android.intent.category.LAUNCHER
++ADDED from AndroidManifest.xml:17:17
++	android:name
++		ADDED from AndroidManifest.xml:17:27
+Index: app/src/main/java/biman/middle/kokin/ru/GoodsProcess.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/biman/middle/kokin/ru/GoodsProcess.java	(revision )
++++ app/src/main/java/biman/middle/kokin/ru/GoodsProcess.java	(revision )
+@@ -0,0 +1,305 @@
++package biman.middle.kokin.ru;
++
++import java.util.ArrayList;
++import java.util.HashMap;
++import java.util.List;
++import java.util.Map;
++
++import android.app.Activity;
++import android.app.AlertDialog;
++import android.app.Dialog;
++import android.content.DialogInterface;
++import android.database.Cursor;
++import android.database.sqlite.SQLiteDatabase;
++import android.view.LayoutInflater;
++import android.view.View;
++import android.view.View.OnClickListener;
++import android.widget.AdapterView;
++import android.widget.Button;
++import android.widget.EditText;
++import android.widget.ExpandableListAdapter;
++import android.widget.ExpandableListView;
++import android.widget.ListAdapter;
++import android.widget.ListView;
++import android.widget.SimpleAdapter;
++import android.widget.SimpleExpandableListAdapter;
++import android.widget.AdapterView.OnItemClickListener;
++import android.widget.ExpandableListView.OnChildClickListener;
++
++public class GoodsProcess extends Activity {
++
++    private static final String NAME = "NAME";
++    private static final String IS_EVEN = "IS_EVEN";
++    ExpandableListAdapter mAdapter;
++	
++    ArrayList aI = new ArrayList();
++    ArrayList aJ = new ArrayList();
++    ArrayList aID = new ArrayList();
++    GoodsProcess _this = this;
++	
++    EditText eFind;
++    Button bFind;
++    SQLiteDatabase database;
++
++    String sqlGoodsTree;
++    String sqlGoodsTreeChild;    
++
++    List<Map<String, String>> groupData;
++    List<List<Map<String, String>>> childData;
++    
++    List<Map<String, String>> goods;
++    Map<String, String> goodsMap;
++    
++    BiManActivity ba;
++
++    String sss;
++    
++	public GoodsProcess() {
++	}
++	
++	public void goodsStart(SQLiteDatabase db, BiManActivity pba ) {
++		ba = pba;
++		database = db;
++
++    	goods = new ArrayList<Map<String, String>>();		
++		
++        eFind = (EditText) ba.findViewById(R.id.findText);
++        bFind = (Button) ba.findViewById(R.id.bFind);
++        bFind.setOnClickListener(new OnClickListener() {
++        	@Override
++        	public void onClick(View v) {
++        		setGoodView("", eFind.getText().toString());
++        	}
++        });
++		
++		   // ываывсывс
++        groupData = new ArrayList<Map<String, String>>();
++        childData = new ArrayList<List<Map<String, String>>>();
++ 
++   		sqlGoodsTree = 
++			//"select _nid_node, cnodetext from goodstree g1 "+
++			//" where not exists (select _nid_node from goodstree gpar where gpar._nid_node = g1.nid_parent )"+
++			//"   and nid_typenode=0"
++   			
++   			"select nid_node, cnodetext from goodstree g1 "+
++			" where not exists (select nid_node from goodstree gpar where gpar.nid_node = g1.nid_parent )"+
++			"   and nid_typenode=0"
++			;
++        
++   		
++    	Cursor friendCursor = database.rawQuery(sqlGoodsTree, new String [] {});
++    	//goods_ids = new String[friendCursor.getCount()];
++    	
++    	friendCursor.moveToFirst();
++    	int parentcount = friendCursor.getCount();
++        
++        for (int i = 0; i < parentcount; i++) {
++        	
++            Map<String, String> curGroupMap = new HashMap<String, String>();
++            groupData.add(curGroupMap);
++
++            curGroupMap.put(NAME, "      "+friendCursor.getString(1));
++
++            List<Map<String, String>> children = new ArrayList<Map<String, String>>();          
++       		sqlGoodsTreeChild = 
++    			"select nid_node, cnodetext from goodstree g1 "+
++    			" where nid_parent="+friendCursor.getString(0)+
++    			"   and nid_typenode=0"
++    			;
++
++        	Cursor childCursor = database.rawQuery(sqlGoodsTreeChild, new String [] {});
++        	//goods_ids = new String[childCursor.getCount()];
++        	
++        	childCursor.moveToFirst();
++       		
++       		int childcount = childCursor.getCount();
++       		
++            for (int j = 0; j < childcount; j++) {
++                Map<String, String> curChildMap = new HashMap<String, String>();
++                children.add(curChildMap);
++                String goodName = childCursor.getString(1);
++                curChildMap.put(NAME, ""+childCursor.getString(1));
++                
++                if (childCursor.isAfterLast()) {
++                } else {
++                	aI.add( i);
++                	aJ.add( j);
++                	aID.add( childCursor.getString(0));
++                }
++                
++                int iii=0;
++                iii=1;
++                childCursor.moveToNext();                
++            }
++            childData.add(children);
++            
++            childCursor.close();
++            friendCursor.moveToNext();
++            
++        }
++
++        
++        ExpandableListView elv1;
++        elv1 = (ExpandableListView) ba.findViewById(R.id.expandableListView1);
++        elv1.requestFocus();
++        elv1.setOnChildClickListener(new OnChildClickListener() {
++			@Override
++			public boolean onChildClick(ExpandableListView arg0, View arg1,
++					int arg2, int arg3, long arg4) {
++				// TODO Auto-generated method stub
++				for (int i=0; i<aI.size();i++) {
++					if (aI.get(i).equals(arg2)) { 
++						if (aJ.get(i).equals(arg3))  {
++							String sidParent = aID.get(i).toString();
++							//Toast.makeText(ba, sidParent, Toast.LENGTH_LONG).show();
++							setGoodView(sidParent, "");
++						}
++					}
++				}
++				
++				return false;
++			}});
++        
++        // Set up our adapter
++        mAdapter = new SimpleExpandableListAdapter(
++                ba,
++                groupData,
++                //android.R.layout.simple_expandable_list_item_1,
++                R.layout.listadapter1,
++                new String[] { NAME, IS_EVEN },
++                //new int[] { android.R.id.text1, android.R.id.text2 },
++                new int[] { R.id.textView1, android.R.id.text2 },
++                childData,
++                android.R.layout.simple_expandable_list_item_2,
++                new String[] { NAME, IS_EVEN },
++                new int[] { android.R.id.text1, android.R.id.text2 }
++                );
++        
++        elv1.setAdapter(mAdapter);        
++        
++        friendCursor.close();        
++		
++	}
++
++    public void setGoodView(String sidParent, String AddedWhere) {
++    	goods.clear();
++    	//goods.
++
++		//ArrayList<String> goods = new ArrayList<String>();
++		String sqlGoods;
++    	if (!AddedWhere.equals("")) {
++      	  sqlGoods = 
++      		  "select goods.nid_good, cnm_goodart, cnm_good "+
++      		  " ,c1.nCost as cost1 "+
++      		  " ,c3.nCost as cost3 "+
++      		  " ,c9.nCost as cost9 "+
++      		  " ,(select cnm_brand from brands where nid_brand=goods.nid_brand) as cnm_brand"+
++      		  "  ,(select coalesce(sum(nqty),0) from accounts "+
++      		  "     where nid_account=41 and nid_subaccount=1 and nDebCred=2 and nid_root=0 "+
++      		  "       and nanalit1=goods.nid_good) as nOSTTotal "+
++      		  "  ,(select coalesce(sum(quantity),0) from reserved where nid_good= goods.nid_good) as nOSTReserv "+
++      		  "  ,(select coalesce(sum(nqty),0) from accounts where nid_account=41 and nid_subaccount=1 and nDebCred=2 and nid_root=0 and nanalit1=goods.nid_good) -  "+
++      		  "   (select coalesce(sum(quantity),0) from reserved where nid_good= goods.nid_good)    as nOSTFree "+
++      		  
++
++      		  " from ((( goods "+
++      		  "     left join costs c1 on (c1.nid_nomencl=goods.nid_good and c1.nid_typecost=1 and c1.dDT_Closed is null) )"+
++      		  "     left join costs c3 on (c3.nid_nomencl=goods.nid_good and c3.nid_typecost=3 and c3.dDT_Closed is null) )"+
++      		  "     left join costs c9 on (c9.nid_nomencl=goods.nid_good and c9.nid_typecost=3 and c9.dDT_Closed is null) )"+      		  
++      		  " where 1=1 "+
++      	      " and ((cNM_GoodArt like '%" + AddedWhere + "%') " +
++      	      "  or  (cNM_Good like '%" + AddedWhere + "%') " +
++      	      "  or  (cNM_Priznak1 like '%" + AddedWhere + "%') " +
++      	      "      ) "+
++      		  "   and nvisible=1"+
++      		  " order by cnm_goodart"
++      		  ;
++      	  
++    	} else {
++    		sqlGoods = 
++    			"select goodstree.nid_good, cnm_goodart, cnm_good "+ 
++    			" ,c1.nCost as cost1 "+
++          		" ,c3.nCost as cost3 "+
++          		" ,c9.nCost as cost9 "+
++          		" ,(select cnm_brand from brands where nid_brand=goods.nid_brand) as cnm_brand"+          		
++        		"  ,(select coalesce(sum(nqty),0) from accounts "+
++          		"     where nid_account=41 and nid_subaccount=1 and nDebCred=2 and nid_root=0 "+
++          		"       and nanalit1=goods.nid_good) as nOSTTotal "+
++          		"  ,(select coalesce(sum(quantity),0) from reserved where nid_good= goods.nid_good) as nOSTReserv "+
++          		"  ,(select coalesce(sum(nqty),0) from accounts where nid_account=41 and nid_subaccount=1 and nDebCred=2 and nid_root=0 and nanalit1=goods.nid_good) -  "+
++          		"   (select coalesce(sum(quantity),0) from reserved where nid_good= goods.nid_good)    as nOSTFree "+
++
++          		"  from ((((goodstree inner join goods on (goods.nID_Good = goodstree.nID_Good) ) "+    			
++    			"     left join costs c1 on (c1.nid_nomencl=goods.nid_good and c1.nid_typecost=1 and c1.dDT_Closed is null) )"+
++          		"     left join costs c3 on (c3.nid_nomencl=goods.nid_good and c3.nid_typecost=3 and c3.dDT_Closed is null) )"+
++          		"     left join costs c9 on (c9.nid_nomencl=goods.nid_good and c9.nid_typecost=3 and c9.dDT_Closed is null) )"+      		  
++
++    			" where 1=1 "+
++    			"   and nid_parent="+sidParent +
++    			"   and nvisible=1"+
++    			" order by cnm_goodart"
++    			;
++    	}
++		
++		Cursor goodsCursor = database.rawQuery(sqlGoods, new String [] {});
++		goodsCursor.moveToFirst();
++			if(!goodsCursor.isAfterLast()) {
++				do {
++			    	goodsMap = new HashMap<String, String>();
++			    	goods.add(goodsMap);
++			    	goodsMap.put("cnm_goodart", goodsCursor.getString(1));    	
++			    	goodsMap.put("cnm_good", goodsCursor.getString(2));			    	
++			    	goodsMap.put("cost1", goodsCursor.getString(3));
++			    	goodsMap.put("cnm_brand", goodsCursor.getString(6));
++			    	
++			    	goodsMap.put("nOSTTotal", goodsCursor.getString(7));
++			    	goodsMap.put("nOSTReserv", goodsCursor.getString(8));
++			    	goodsMap.put("nOSTFree", goodsCursor.getString(9));			    	
++			    	
++			    	
++					//String name = goodsCursor.getString(1) + " " + goodsCursor.getString(2);
++					//goods.add(name, "");
++			    	
++				} while (goodsCursor.moveToNext());
++			}
++			goodsCursor.close();							
++		
++	
++			/*
++				nOSTTotal, nOSTReserv, nOSTFree
++			*/
++			
++		ListView lv = (ListView)ba.findViewById(R.id.listGoods);
++		ListAdapter la = new SimpleAdapter(
++					ba, 
++					goods, 
++					R.layout.listgoods, 
++					new String[] { "cnm_goodart", "cnm_good", "cost1", "cnm_brand", "nOSTTotal", "nOSTReserv", "nOSTFree" }, 
++					new int[]{R.id.cnm_goodart, R.id.cnm_good, R.id.cost, R.id.brand, R.id.nOSTTotal , R.id.nOSTReserv, R.id.nOSTFree		
++					}
++					);
++		lv.setAdapter(la);
++		lv.setOnItemClickListener(new OnItemClickListener(){
++
++			@Override
++			public void onItemClick(AdapterView<?> arg0, View v, int pos,
++					long arg3) {
++				// TODO Auto-generated method stub
++				ba.showDialog(0);
++				
++				goodsMap = goods.get(pos);
++				//String s1=goodsMap.get("cnm_goodart").toString();
++				ba.eGoodArt.setText(goodsMap.get("cnm_goodart").toString());
++				ba.eGoodName.setText(goodsMap.get("cnm_good").toString());				
++
++				
++			}});
++    }
++
++    protected Dialog onCreateDialog(int id) {
++    	return ba.builder.create();
++   	
++    }
++    
++	
++}
+Index: build.gradle
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- build.gradle	(revision )
++++ build.gradle	(revision )
+@@ -0,0 +1,15 @@
++// Top-level build file where you can add configuration options common to all sub-projects/modules.
++buildscript {
++    repositories {
++        jcenter()
++    }
++    dependencies {
++        classpath 'com.android.tools.build:gradle:1.2.3'
++    }
++}
++
++allprojects {
++    repositories {
++        jcenter()
++    }
++}
+Index: app/build/intermediates/res/debug/layout/listadapter1.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/build/intermediates/res/debug/layout/listadapter1.xml	(revision )
++++ app/build/intermediates/res/debug/layout/listadapter1.xml	(revision )
+@@ -0,0 +1,13 @@
++<?xml version="1.0" encoding="utf-8"?>
++<TextView
++ xmlns:android="http://schemas.android.com/apk/res/android"
++ android:id="@+id/textView1"
++ android:layout_width="match_parent"
++ android:layout_height="wrap_content"
++ android:padding="5dp"
++ android:text="TextView"
++ android:textColor="#00FF00"
++ android:textSize="24sp" 
++ android:gravity="left" android:paddingLeft="100dp">
++</TextView>
++<!-- From: file:/C:/Users/admin/AndroidStudioProjects/BiMan1/app/src/main/res/layout/listadapter1.xml -->
+\ No newline at end of file
+Index: app/build/intermediates/res/debug/layout/doctab.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/build/intermediates/res/debug/layout/doctab.xml	(revision )
++++ app/build/intermediates/res/debug/layout/doctab.xml	(revision )
+@@ -0,0 +1,97 @@
++<?xml version="1.0" encoding="utf-8"?>
++<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
++    android:id="@+id/dtab"
++    android:layout_width="match_parent"
++    android:layout_height="fill_parent"
++    android:orientation="vertical" >
++    
++	<LinearLayout
++	    android:layout_width="fill_parent"
++	    android:layout_height="100dp"> 
++
++		<TextView
++		    android:id="@+id/textView1"
++		    android:layout_width="wrap_content"
++		    android:layout_height="wrap_content"
++		    android:text=" Поиск " />
++
++		<EditText
++		    android:id="@+id/findText"
++		    android:layout_width="wrap_content"
++		    android:layout_height="wrap_content"
++		    android:layout_weight="1"
++		    android:ems="10" >
++
++		</EditText>
++
++		<Button
++		    android:id="@+id/bFind"
++		    android:layout_width="wrap_content"
++		    android:layout_height="wrap_content"
++		    android:text="Найти" />
++
++    </LinearLayout>
++    
++	
++	<LinearLayout
++	    android:layout_width="wrap_content"
++	    android:layout_height="fill_parent" 
++	    android:orientation="horizontal">
++
++   	<LinearLayout
++    	    android:layout_width="299dp"
++    	    android:layout_height="fill_parent"
++    	    android:background="#888888"
++    	    android:orientation="vertical" >
++
++    		<LinearLayout
++		        android:layout_width="300dp"
++        		android:layout_height="fill_parent"
++        		android:orientation="vertical"
++            	android:layout_margin="1dip"
++        		android:background="#000000" >
++
++    			<CheckBox
++    			    android:id="@+id/checkBox1"
++    			    android:layout_width="wrap_content"
++    			    android:layout_height="wrap_content"
++    			    android:text="CheckBox" />
++
++    			<Spinner
++    			    android:id="@+id/spinner_mngr"
++    			    android:layout_width="match_parent"
++    			    android:layout_height="wrap_content" />
++
++    			<Spinner
++    			    android:id="@+id/spinner_typedoc"
++    			    android:layout_width="match_parent"
++    			    android:layout_height="wrap_content" />
++
++    			<Spinner
++    			    android:id="@+id/spinner_interval"
++    			    android:layout_width="match_parent"
++    			    android:layout_height="wrap_content" />
++    						
++    						
++			</LinearLayout>
++
++    	    
++    	</LinearLayout>
++
++
++    	<LinearLayout
++	        android:layout_width="fill_parent"
++        	android:layout_height="fill_parent"
++        	android:orientation="vertical" 
++        	android:background="#888888" >
++			<ListView
++	    		android:id="@+id/listDocs"
++    			android:layout_width="fill_parent"
++    			android:layout_height="fill_parent" 
++            	android:layout_margin="1dip"
++            	android:background="#000000" >
++			</ListView>        
++    	</LinearLayout>
++	</LinearLayout>
++		
++</LinearLayout><!-- From: file:/C:/Users/admin/AndroidStudioProjects/BiMan1/app/src/main/res/layout/doctab.xml -->
+\ No newline at end of file
+Index: app/src/main/res/layout/gpsconfirm.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/layout/gpsconfirm.xml	(revision )
++++ app/src/main/res/layout/gpsconfirm.xml	(revision )
+@@ -0,0 +1,13 @@
++<?xml version="1.0" encoding="utf-8"?>
++<LinearLayout
++  xmlns:android="http://schemas.android.com/apk/res/android"
++  android:orientation="vertical"
++  android:layout_width="match_parent"
++  android:layout_height="match_parent">
++    <TextView android:id="@+id/gps_text1" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="GPS не включен"></TextView>
++    <TextView android:id="@+id/gps_text2" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
++    <LinearLayout android:layout_height="wrap_content" android:id="@+id/linearLayout1" android:layout_width="match_parent">
++        <Button android:id="@+id/gps_bOK" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Ok"></Button>
++    </LinearLayout>
++    
++</LinearLayout>
+Index: .idea/runConfigurations.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- .idea/runConfigurations.xml	(revision )
++++ .idea/runConfigurations.xml	(revision )
+@@ -0,0 +1,12 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<project version="4">
++  <component name="RunConfigurationProducerService">
++    <option name="ignoredProducers">
++      <set>
++        <option value="org.jetbrains.plugins.gradle.execution.test.runner.AllInPackageGradleConfigurationProducer" />
++        <option value="org.jetbrains.plugins.gradle.execution.test.runner.TestClassGradleConfigurationProducer" />
++        <option value="org.jetbrains.plugins.gradle.execution.test.runner.TestMethodGradleConfigurationProducer" />
++      </set>
++    </option>
++  </component>
++</project>
+\ No newline at end of file
+Index: .idea/compiler.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- .idea/compiler.xml	(revision )
++++ .idea/compiler.xml	(revision )
+@@ -0,0 +1,22 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<project version="4">
++  <component name="CompilerConfiguration">
++    <resourceExtensions />
++    <wildcardResourcePatterns>
++      <entry name="!?*.java" />
++      <entry name="!?*.form" />
++      <entry name="!?*.class" />
++      <entry name="!?*.groovy" />
++      <entry name="!?*.scala" />
++      <entry name="!?*.flex" />
++      <entry name="!?*.kt" />
++      <entry name="!?*.clj" />
++      <entry name="!?*.aj" />
++    </wildcardResourcePatterns>
++    <annotationProcessing>
++      <profile default="true" name="Default" enabled="false">
++        <processorPath useClasspath="true" />
++      </profile>
++    </annotationProcessing>
++  </component>
++</project>
+\ No newline at end of file
+Index: app/src/main/java/biman/middle/kokin/ru/GPSConfirm.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/biman/middle/kokin/ru/GPSConfirm.java	(revision )
++++ app/src/main/java/biman/middle/kokin/ru/GPSConfirm.java	(revision )
+@@ -0,0 +1,47 @@
++package biman.middle.kokin.ru;
++
++import android.app.Activity;
++import android.os.Bundle;
++import android.view.View;
++import android.widget.Button;
++import android.widget.TextView;
++import biman.middle.kokin.ru.R;
++
++public class GPSConfirm extends Activity {
++    int gpstype;
++    String messtoact;
++    Button btnOK;
++    @Override
++    public void onCreate(Bundle savedInstanceState) {
++        super.onCreate(savedInstanceState);
++        setContentView(R.layout.gpsconfirm);
++
++        Bundle extras = getIntent().getExtras();
++        gpstype = extras.getInt("gpstype");
++        messtoact = extras.getString("messtoact");
++        
++        TextView label1 = (TextView) findViewById(R.id.gps_text1);;
++        TextView label2 = (TextView) findViewById(R.id.gps_text2);;        
++
++        if (!messtoact.equals("")) {
++        	label1.setText(messtoact);
++        }
++        
++        //"��� ����������� GPS ������ ����������";        
++    	label2.setText("");
++        if (gpstype==2) {
++        	label2.setText("��� ����������� GPS ������ ����������");
++        }
++        
++        btnOK = (Button) findViewById(R.id.gps_bOK);
++        btnOK.setOnClickListener(new View.OnClickListener() {         
++            @Override
++            public void onClick(View v) {
++            	finish();
++            }
++        });        
++
++        
++    }
++
++}
+Index: app/app.iml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/app.iml	(revision )
++++ app/app.iml	(revision )
+@@ -0,0 +1,92 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<module external.linked.project.id=":app" external.linked.project.path="$MODULE_DIR$" external.root.project.path="$MODULE_DIR$/.." external.system.id="GRADLE" external.system.module.group="BiMan1" external.system.module.version="unspecified" type="JAVA_MODULE" version="4">
++  <component name="FacetManager">
++    <facet type="android-gradle" name="Android-Gradle">
++      <configuration>
++        <option name="GRADLE_PROJECT_PATH" value=":app" />
++      </configuration>
++    </facet>
++    <facet type="android" name="Android">
++      <configuration>
++        <option name="SELECTED_BUILD_VARIANT" value="debug" />
++        <option name="SELECTED_TEST_ARTIFACT" value="_android_test_" />
++        <option name="ASSEMBLE_TASK_NAME" value="assembleDebug" />
++        <option name="COMPILE_JAVA_TASK_NAME" value="compileDebugSources" />
++        <option name="ASSEMBLE_TEST_TASK_NAME" value="assembleDebugAndroidTest" />
++        <option name="COMPILE_JAVA_TEST_TASK_NAME" value="compileDebugAndroidTestSources" />
++        <afterSyncTasks>
++          <task>generateDebugAndroidTestSources</task>
++          <task>generateDebugSources</task>
++        </afterSyncTasks>
++        <option name="ALLOW_USER_CONFIGURATION" value="false" />
++        <option name="MANIFEST_FILE_RELATIVE_PATH" value="/src/main/AndroidManifest.xml" />
++        <option name="RES_FOLDER_RELATIVE_PATH" value="/src/main/res" />
++        <option name="RES_FOLDERS_RELATIVE_PATH" value="file://$MODULE_DIR$/src/main/res" />
++        <option name="ASSETS_FOLDER_RELATIVE_PATH" value="/src/main/assets" />
++      </configuration>
++    </facet>
++  </component>
++  <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_6" inherit-compiler-output="false">
++    <output url="file://$MODULE_DIR$/build/intermediates/classes/debug" />
++    <output-test url="file://$MODULE_DIR$/build/intermediates/classes/androidTest/debug" />
++    <exclude-output />
++    <content url="file://$MODULE_DIR$">
++      <sourceFolder url="file://$MODULE_DIR$/build/generated/source/r/debug" isTestSource="false" generated="true" />
++      <sourceFolder url="file://$MODULE_DIR$/build/generated/source/aidl/debug" isTestSource="false" generated="true" />
++      <sourceFolder url="file://$MODULE_DIR$/build/generated/source/buildConfig/debug" isTestSource="false" generated="true" />
++      <sourceFolder url="file://$MODULE_DIR$/build/generated/source/rs/debug" isTestSource="false" generated="true" />
++      <sourceFolder url="file://$MODULE_DIR$/build/generated/res/rs/debug" type="java-resource" />
++      <sourceFolder url="file://$MODULE_DIR$/build/generated/res/generated/debug" type="java-resource" />
++      <sourceFolder url="file://$MODULE_DIR$/build/generated/source/r/androidTest/debug" isTestSource="true" generated="true" />
++      <sourceFolder url="file://$MODULE_DIR$/build/generated/source/aidl/androidTest/debug" isTestSource="true" generated="true" />
++      <sourceFolder url="file://$MODULE_DIR$/build/generated/source/buildConfig/androidTest/debug" isTestSource="true" generated="true" />
++      <sourceFolder url="file://$MODULE_DIR$/build/generated/source/rs/androidTest/debug" isTestSource="true" generated="true" />
++      <sourceFolder url="file://$MODULE_DIR$/build/generated/res/rs/androidTest/debug" type="java-test-resource" />
++      <sourceFolder url="file://$MODULE_DIR$/build/generated/res/generated/androidTest/debug" type="java-test-resource" />
++      <sourceFolder url="file://$MODULE_DIR$/src/debug/res" type="java-resource" />
++      <sourceFolder url="file://$MODULE_DIR$/src/debug/resources" type="java-resource" />
++      <sourceFolder url="file://$MODULE_DIR$/src/debug/assets" type="java-resource" />
++      <sourceFolder url="file://$MODULE_DIR$/src/debug/aidl" isTestSource="false" />
++      <sourceFolder url="file://$MODULE_DIR$/src/debug/java" isTestSource="false" />
++      <sourceFolder url="file://$MODULE_DIR$/src/debug/jni" isTestSource="false" />
++      <sourceFolder url="file://$MODULE_DIR$/src/debug/rs" isTestSource="false" />
++      <sourceFolder url="file://$MODULE_DIR$/src/main/res" type="java-resource" />
++      <sourceFolder url="file://$MODULE_DIR$/src/main/resources" type="java-resource" />
++      <sourceFolder url="file://$MODULE_DIR$/src/main/assets" type="java-resource" />
++      <sourceFolder url="file://$MODULE_DIR$/src/main/aidl" isTestSource="false" />
++      <sourceFolder url="file://$MODULE_DIR$/src/main/java" isTestSource="false" />
++      <sourceFolder url="file://$MODULE_DIR$/src/main/jni" isTestSource="false" />
++      <sourceFolder url="file://$MODULE_DIR$/src/main/rs" isTestSource="false" />
++      <sourceFolder url="file://$MODULE_DIR$/src/androidTest/res" type="java-test-resource" />
++      <sourceFolder url="file://$MODULE_DIR$/src/androidTest/resources" type="java-test-resource" />
++      <sourceFolder url="file://$MODULE_DIR$/src/androidTest/assets" type="java-test-resource" />
++      <sourceFolder url="file://$MODULE_DIR$/src/androidTest/aidl" isTestSource="true" />
++      <sourceFolder url="file://$MODULE_DIR$/src/androidTest/java" isTestSource="true" />
++      <sourceFolder url="file://$MODULE_DIR$/src/androidTest/jni" isTestSource="true" />
++      <sourceFolder url="file://$MODULE_DIR$/src/androidTest/rs" isTestSource="true" />
++      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/assets" />
++      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/bundles" />
++      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/classes" />
++      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/coverage-instrumented-classes" />
++      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/dependency-cache" />
++      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/dex" />
++      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/dex-cache" />
++      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/incremental" />
++      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/jacoco" />
++      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/javaResources" />
++      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/libs" />
++      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/lint" />
++      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/manifests" />
++      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/ndk" />
++      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/pre-dexed" />
++      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/proguard" />
++      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/res" />
++      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/rs" />
++      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/symbols" />
++      <excludeFolder url="file://$MODULE_DIR$/build/outputs" />
++      <excludeFolder url="file://$MODULE_DIR$/build/tmp" />
++    </content>
++    <orderEntry type="jdk" jdkName="Android API 17 Platform" jdkType="Android SDK" />
++    <orderEntry type="sourceFolder" forTests="false" />
++  </component>
++</module>
+\ No newline at end of file
+Index: .idea/.name
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- .idea/.name	(revision )
++++ .idea/.name	(revision )
+@@ -0,0 +1,1 @@
++BiMan
+\ No newline at end of file
+Index: app/src/main/res/drawable/my_border.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/drawable/my_border.xml	(revision )
++++ app/src/main/res/drawable/my_border.xml	(revision )
+@@ -0,0 +1,11 @@
++<?xml version="1.0" encoding="utf-8"?>
++<animation-list xmlns:android="http://schemas.android.com/apk/res/android" >
++<shape xmlns:android="http://schemas.android.com/apk/res/android">
++    <stroke android:width="4dp" android:color="#FF00FF00" />
++    
++    <padding android:left="7dp" android:top="7dp"
++            android:right="7dp" android:bottom="7dp" />
++    <corners android:radius="4dp" />
++</shape>    
++
++</animation-list>
+\ No newline at end of file
+Index: app/src/main/java/biman/middle/kokin/ru/BiManActivity.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/biman/middle/kokin/ru/BiManActivity.java	(revision )
++++ app/src/main/java/biman/middle/kokin/ru/BiManActivity.java	(revision )
+@@ -0,0 +1,175 @@
++package biman.middle.kokin.ru;
++
++
++import android.app.Activity;
++import android.app.AlertDialog;
++import android.app.Dialog;
++import android.content.Context;
++import android.content.DialogInterface;
++import android.content.SharedPreferences;
++import android.database.sqlite.SQLiteDatabase;
++import android.os.Bundle;
++import android.view.LayoutInflater;
++import android.view.View;
++import android.view.inputmethod.InputMethodManager;
++import android.widget.LinearLayout;
++import android.widget.TabHost;
++import android.widget.TabWidget;
++import android.widget.TextView;
++import android.widget.TabHost.TabSpec;
++
++public class BiManActivity extends Activity { 
++	//extends  TabActivity implements TabHost.TabContentFactory {
++	
++	static SharedPreferences preferences;
++    SharedPreferences.Editor editor;
++    DatabaseHelper dh;
++    
++    private static final String DB_NAME = "biman1.sqlite3";
++	private static final String TABLE_NAME = "goodstree";
++
++	private SQLiteDatabase database;
++	AlertDialog.Builder builder;
++
++	BiManActivity _this = this;
++
++    GoodsProcess goodProc;
++    KontrProcess kontrProc;
++    DocProcess docProc;
++    
++    TextView eGoodArt;
++    TextView eGoodName;
++    TextView eKontrName;
++    TextView eDocName;    
++
++    LinearLayout ll;
++    TabWidget tw;        
++    TextView tv;
++    View tabView;
++    
++    
++    /*
++	@Override
++	public View createTabContent(String tag) {
++		// TODO Auto-generated method stub
++        final TextView tv = new TextView(this);
++        //dh = new DatabaseHelper(this);
++        //String aaa=dh.getCol2();
++        //tv.setText("from table aaa "+aaa);
++        return tv;
++	}
++	*/
++	
++    @Override
++    public void onCreate(Bundle savedInstanceState) {
++        super.onCreate(savedInstanceState);
++
++        ExternalDbOpenHelper dbOpenHelper = new ExternalDbOpenHelper(this, DB_NAME);
++        database = dbOpenHelper.openDataBase();
++        //���, ���� �������!
++        
++        setContentView(R.layout.main);
++
++        
++        //final TabHost tabHost = getTabHost();
++        final TabHost tabHost = (TabHost) findViewById(android.R.id.tabhost);
++        tabHost.setup();
++        
++        LayoutInflater.from(this).inflate(R.layout.goodtab, tabHost.getTabContentView(), true);
++       	TabSpec tc1 = tabHost.newTabSpec("tab1");      
++       	tc1.setIndicator("������� �������");
++       	tc1.setContent(R.id.v1);
++        tabHost.addTab(tc1);
++
++        LayoutInflater.from(this).inflate(R.layout.kontrtab, tabHost.getTabContentView(), true);        
++       	TabSpec tc2 = tabHost.newTabSpec("tab2");
++       	tc2.setIndicator("�������");
++       	tc2.setContent(R.id.ktab);
++        tabHost.addTab(tc2);
++
++        LayoutInflater.from(this).inflate(R.layout.doctab, tabHost.getTabContentView(), true);        
++       	TabSpec tc3 = tabHost.newTabSpec("tab3");
++       	tc3.setIndicator("���������");
++       	tc3.setContent(R.id.dtab);
++        tabHost.addTab(tc3);
++
++        tw = (TabWidget)tabHost.findViewById(android.R.id.tabs);        
++       
++        tabView = tw.getChildTabViewAt(0);
++        tv = (TextView)tabView.findViewById(android.R.id.title);
++        tv.setTextSize(30);        
++        	
++        tabView = tw.getChildTabViewAt(1);
++        tv = (TextView)tabView.findViewById(android.R.id.title);
++        tv.setTextSize(30);        
++        
++        tabView = tw.getChildTabViewAt(2);
++        tv = (TextView)tabView.findViewById(android.R.id.title);
++        tv.setTextSize(30);        
++        
++        
++        // �������� ������� Goods
++        goodProc = new GoodsProcess();
++        goodProc.goodsStart(database, this);
++
++        kontrProc = new KontrProcess();
++        kontrProc.kontrStart(database, this);
++        
++        docProc = new DocProcess();
++        docProc.docStart(database, this);
++        
++        
++       	InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
++       	imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
++        //		    android:focusable="false"
++        
++    }    
++    
++    
++    protected Dialog onCreateDialog(int id) {
++    	AlertDialog.Builder builder = new AlertDialog.Builder(this);
++    	
++    	if (id==0) {
++    		View v = LayoutInflater.from(this).inflate(R.layout.listgoods, null, true);
++    		builder.setView(v);
++    		
++    		eGoodArt   = (TextView) v.findViewById(R.id.cnm_goodart);
++    		eGoodName  = (TextView) v.findViewById(R.id.cnm_good);    		
++    		builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
++    			public void onClick(DialogInterface dialog, int id) {
++    				int kkk=0;
++    			}
++    		});
++    	}	
++    	
++    	if (id==1) {
++    		View v = LayoutInflater.from(this).inflate(R.layout.listkontrs, null, true);
++    		builder.setView(v);
++    		
++    		eKontrName   = (TextView) v.findViewById(R.id.cnm_kontr);
++    		
++    		builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
++    			public void onClick(DialogInterface dialog, int id) {
++    				int kkk=0;
++    			}
++    		});
++    	}
++    	
++    	if (id==2) {
++    		View v = LayoutInflater.from(this).inflate(R.layout.listdocs, null, true);
++    		builder.setView(v);
++    		
++    		eDocName   = (TextView) v.findViewById(R.id.cnumasis);
++    		
++    		builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
++    			public void onClick(DialogInterface dialog, int id) {
++    				int kkk=0;
++    			}
++    		});
++    	}
++    	
++    	return builder.create();
++   	
++    }
++
++}
+\ No newline at end of file
+Index: local.properties
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>windows-1251
+===================================================================
+--- local.properties	(revision )
++++ local.properties	(revision )
+@@ -0,0 +1,11 @@
++## This file is automatically generated by Android Studio.
++# Do not modify this file -- YOUR CHANGES WILL BE ERASED!
++#
++# This file must *NOT* be checked into Version Control Systems,
++# as it contains information specific to your local configuration.
++#
++# Location of the SDK. This is only used by Gradle.
++# For customization when using a Version Control System, please read the
++# header note.
++#Sat Aug 15 20:14:49 MSK 2015
++sdk.dir=C\:\\Users\\admin\\AppData\\Local\\Android\\sdk
+Index: app/src/main/res/layout/goodtab.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/layout/goodtab.xml	(revision )
++++ app/src/main/res/layout/goodtab.xml	(revision )
+@@ -0,0 +1,72 @@
++<?xml version="1.0" encoding="utf-8"?>
++<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
++    android:layout_width="fill_parent"
++    android:layout_height="fill_parent"
++    android:orientation="vertical"
++    android:id="@+id/v1">
++
++	<LinearLayout
++	    android:layout_width="fill_parent"
++	    android:layout_height="100dp"> 
++
++		<TextView
++		    android:id="@+id/textView1"
++		    android:layout_width="wrap_content"
++		    android:layout_height="wrap_content"
++		    android:text=" Поиск " />
++
++		<EditText
++		    android:id="@+id/findText"
++		    android:layout_width="wrap_content"
++		    android:layout_height="wrap_content"
++		    android:layout_weight="1"
++		    android:ems="10" >
++
++		</EditText>
++
++		<Button
++		    android:id="@+id/bFind"
++		    android:layout_width="wrap_content"
++		    android:layout_height="wrap_content"
++		    android:text="Найти" />
++
++    </LinearLayout>
++    
++	<LinearLayout
++	    android:layout_width="wrap_content"
++	    android:layout_height="fill_parent" 
++	    android:orientation="horizontal" >
++   
++    	<LinearLayout
++	        android:layout_width="300dp"
++        	android:layout_height="fill_parent"
++        	android:orientation="vertical" 
++        	android:background="#888888" >
++
++        	<ExpandableListView
++	            android:id="@+id/expandableListView1"
++            	android:layout_width="match_parent"
++            	android:layout_height="wrap_content"
++            	android:layout_weight="0.35"
++            	android:layout_margin="1dip"
++            	android:background="#000000" >
++        	</ExpandableListView>
++    	</LinearLayout>
++
++
++    	<LinearLayout
++	        android:layout_width="fill_parent"
++        	android:layout_height="fill_parent"
++        	android:orientation="vertical" 
++        	android:background="#888888" >
++			<ListView
++	    		android:id="@+id/listGoods"
++    			android:layout_width="fill_parent"
++    			android:layout_height="fill_parent" 
++            	android:layout_margin="1dip"
++            	android:background="#000000" >
++			</ListView>        
++    	</LinearLayout>
++	</LinearLayout>
++   
++</LinearLayout>
+\ No newline at end of file
+Index: app/build/intermediates/incremental/mergeResources/androidTest/debug/merger.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/build/intermediates/incremental/mergeResources/androidTest/debug/merger.xml	(revision )
++++ app/build/intermediates/incremental/mergeResources/androidTest/debug/merger.xml	(revision )
+@@ -0,0 +1,2 @@
++<?xml version="1.0" encoding="utf-8"?>
++<merger version="3"><dataSet config="main"><source path="C:\Users\admin\AndroidStudioProjects\BiMan1\app\src\androidTest\res"/><source path="C:\Users\admin\AndroidStudioProjects\BiMan1\app\build\generated\res\rs\androidTest\debug"/><source path="C:\Users\admin\AndroidStudioProjects\BiMan1\app\build\generated\res\generated\androidTest\debug"/></dataSet><mergedItems/></merger>
+\ No newline at end of file
+Index: .idea/modules.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- .idea/modules.xml	(revision )
++++ .idea/modules.xml	(revision )
+@@ -0,0 +1,9 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<project version="4">
++  <component name="ProjectModuleManager">
++    <modules>
++      <module fileurl="file://$PROJECT_DIR$/BiMan1.iml" filepath="$PROJECT_DIR$/BiMan1.iml" />
++      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
++    </modules>
++  </component>
++</project>
+\ No newline at end of file
+Index: .idea/copyright/profiles_settings.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- .idea/copyright/profiles_settings.xml	(revision )
++++ .idea/copyright/profiles_settings.xml	(revision )
+@@ -0,0 +1,3 @@
++<component name="CopyrightManager">
++  <settings default="" />
++</component>
+\ No newline at end of file
+Index: gradle/wrapper/gradle-wrapper.properties
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>windows-1251
+===================================================================
+--- gradle/wrapper/gradle-wrapper.properties	(revision )
++++ gradle/wrapper/gradle-wrapper.properties	(revision )
+@@ -0,0 +1,6 @@
++#Wed Apr 10 15:27:10 PDT 2013
++distributionBase=GRADLE_USER_HOME
++distributionPath=wrapper/dists
++zipStoreBase=GRADLE_USER_HOME
++zipStorePath=wrapper/dists
++distributionUrl=https\://services.gradle.org/distributions/gradle-2.2.1-all.zip
+Index: app/src/main/res/layout/listadapter1.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/layout/listadapter1.xml	(revision )
++++ app/src/main/res/layout/listadapter1.xml	(revision )
+@@ -0,0 +1,12 @@
++<?xml version="1.0" encoding="utf-8"?>
++<TextView
++ xmlns:android="http://schemas.android.com/apk/res/android"
++ android:id="@+id/textView1"
++ android:layout_width="match_parent"
++ android:layout_height="wrap_content"
++ android:padding="5dp"
++ android:text="TextView"
++ android:textColor="#00FF00"
++ android:textSize="24sp" 
++ android:gravity="left" android:paddingLeft="100dp">
++</TextView>
+Index: gradlew.bat
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- gradlew.bat	(revision )
++++ gradlew.bat	(revision )
+@@ -0,0 +1,90 @@
++@if "%DEBUG%" == "" @echo off
++@rem ##########################################################################
++@rem
++@rem  Gradle startup script for Windows
++@rem
++@rem ##########################################################################
++
++@rem Set local scope for the variables with windows NT shell
++if "%OS%"=="Windows_NT" setlocal
++
++@rem Add default JVM options here. You can also use JAVA_OPTS and GRADLE_OPTS to pass JVM options to this script.
++set DEFAULT_JVM_OPTS=
++
++set DIRNAME=%~dp0
++if "%DIRNAME%" == "" set DIRNAME=.
++set APP_BASE_NAME=%~n0
++set APP_HOME=%DIRNAME%
++
++@rem Find java.exe
++if defined JAVA_HOME goto findJavaFromJavaHome
++
++set JAVA_EXE=java.exe
++%JAVA_EXE% -version >NUL 2>&1
++if "%ERRORLEVEL%" == "0" goto init
++
++echo.
++echo ERROR: JAVA_HOME is not set and no 'java' command could be found in your PATH.
++echo.
++echo Please set the JAVA_HOME variable in your environment to match the
++echo location of your Java installation.
++
++goto fail
++
++:findJavaFromJavaHome
++set JAVA_HOME=%JAVA_HOME:"=%
++set JAVA_EXE=%JAVA_HOME%/bin/java.exe
++
++if exist "%JAVA_EXE%" goto init
++
++echo.
++echo ERROR: JAVA_HOME is set to an invalid directory: %JAVA_HOME%
++echo.
++echo Please set the JAVA_HOME variable in your environment to match the
++echo location of your Java installation.
++
++goto fail
++
++:init
++@rem Get command-line arguments, handling Windowz variants
++
++if not "%OS%" == "Windows_NT" goto win9xME_args
++if "%@eval[2+2]" == "4" goto 4NT_args
++
++:win9xME_args
++@rem Slurp the command line arguments.
++set CMD_LINE_ARGS=
++set _SKIP=2
++
++:win9xME_args_slurp
++if "x%~1" == "x" goto execute
++
++set CMD_LINE_ARGS=%*
++goto execute
++
++:4NT_args
++@rem Get arguments from the 4NT Shell from JP Software
++set CMD_LINE_ARGS=%$
++
++:execute
++@rem Setup the command line
++
++set CLASSPATH=%APP_HOME%\gradle\wrapper\gradle-wrapper.jar
++
++@rem Execute Gradle
++"%JAVA_EXE%" %DEFAULT_JVM_OPTS% %JAVA_OPTS% %GRADLE_OPTS% "-Dorg.gradle.appname=%APP_BASE_NAME%" -classpath "%CLASSPATH%" org.gradle.wrapper.GradleWrapperMain %CMD_LINE_ARGS%
++
++:end
++@rem End local scope for the variables with windows NT shell
++if "%ERRORLEVEL%"=="0" goto mainEnd
++
++:fail
++rem Set variable GRADLE_EXIT_CONSOLE if you need the _script_ return code instead of
++rem the _cmd.exe /c_ return code!
++if  not "" == "%GRADLE_EXIT_CONSOLE%" exit 1
++exit /b 1
++
++:mainEnd
++if "%OS%"=="Windows_NT" endlocal
++
++:omega
+Index: app/build/generated/source/buildConfig/debug/biman/middle/kokin/ru/BuildConfig.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/build/generated/source/buildConfig/debug/biman/middle/kokin/ru/BuildConfig.java	(revision )
++++ app/build/generated/source/buildConfig/debug/biman/middle/kokin/ru/BuildConfig.java	(revision )
+@@ -0,0 +1,13 @@
++/**
++ * Automatically generated file. DO NOT MODIFY
++ */
++package biman.middle.kokin.ru;
++
++public final class BuildConfig {
++  public static final boolean DEBUG = Boolean.parseBoolean("true");
++  public static final String APPLICATION_ID = "biman.middle.kokin.ru";
++  public static final String BUILD_TYPE = "debug";
++  public static final String FLAVOR = "";
++  public static final int VERSION_CODE = 1;
++  public static final String VERSION_NAME = "";
++}
+Index: .idea/encodings.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- .idea/encodings.xml	(revision )
++++ .idea/encodings.xml	(revision )
+@@ -0,0 +1,6 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<project version="4">
++  <component name="Encoding">
++    <file url="PROJECT" charset="UTF-8" />
++  </component>
++</project>
+\ No newline at end of file
+Index: app/build/intermediates/res/debug/layout/gpsconfirm.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/build/intermediates/res/debug/layout/gpsconfirm.xml	(revision )
++++ app/build/intermediates/res/debug/layout/gpsconfirm.xml	(revision )
+@@ -0,0 +1,14 @@
++<?xml version="1.0" encoding="utf-8"?>
++<LinearLayout
++  xmlns:android="http://schemas.android.com/apk/res/android"
++  android:orientation="vertical"
++  android:layout_width="match_parent"
++  android:layout_height="match_parent">
++    <TextView android:id="@+id/gps_text1" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="GPS не включен"></TextView>
++    <TextView android:id="@+id/gps_text2" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
++    <LinearLayout android:layout_height="wrap_content" android:id="@+id/linearLayout1" android:layout_width="match_parent">
++        <Button android:id="@+id/gps_bOK" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Ok"></Button>
++    </LinearLayout>
++    
++</LinearLayout>
++<!-- From: file:/C:/Users/admin/AndroidStudioProjects/BiMan1/app/src/main/res/layout/gpsconfirm.xml -->
+\ No newline at end of file
+Index: gradlew
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- gradlew	(revision )
++++ gradlew	(revision )
+@@ -0,0 +1,164 @@
++#!/usr/bin/env bash
++
++##############################################################################
++##
++##  Gradle start up script for UN*X
++##
++##############################################################################
++
++# Add default JVM options here. You can also use JAVA_OPTS and GRADLE_OPTS to pass JVM options to this script.
++DEFAULT_JVM_OPTS=""
++
++APP_NAME="Gradle"
++APP_BASE_NAME=`basename "$0"`
++
++# Use the maximum available, or set MAX_FD != -1 to use that value.
++MAX_FD="maximum"
++
++warn ( ) {
++    echo "$*"
++}
++
++die ( ) {
++    echo
++    echo "$*"
++    echo
++    exit 1
++}
++
++# OS specific support (must be 'true' or 'false').
++cygwin=false
++msys=false
++darwin=false
++case "`uname`" in
++  CYGWIN* )
++    cygwin=true
++    ;;
++  Darwin* )
++    darwin=true
++    ;;
++  MINGW* )
++    msys=true
++    ;;
++esac
++
++# For Cygwin, ensure paths are in UNIX format before anything is touched.
++if $cygwin ; then
++    [ -n "$JAVA_HOME" ] && JAVA_HOME=`cygpath --unix "$JAVA_HOME"`
++fi
++
++# Attempt to set APP_HOME
++# Resolve links: $0 may be a link
++PRG="$0"
++# Need this for relative symlinks.
++while [ -h "$PRG" ] ; do
++    ls=`ls -ld "$PRG"`
++    link=`expr "$ls" : '.*-> \(.*\)$'`
++    if expr "$link" : '/.*' > /dev/null; then
++        PRG="$link"
++    else
++        PRG=`dirname "$PRG"`"/$link"
++    fi
++done
++SAVED="`pwd`"
++cd "`dirname \"$PRG\"`/" >&-
++APP_HOME="`pwd -P`"
++cd "$SAVED" >&-
++
++CLASSPATH=$APP_HOME/gradle/wrapper/gradle-wrapper.jar
++
++# Determine the Java command to use to start the JVM.
++if [ -n "$JAVA_HOME" ] ; then
++    if [ -x "$JAVA_HOME/jre/sh/java" ] ; then
++        # IBM's JDK on AIX uses strange locations for the executables
++        JAVACMD="$JAVA_HOME/jre/sh/java"
++    else
++        JAVACMD="$JAVA_HOME/bin/java"
++    fi
++    if [ ! -x "$JAVACMD" ] ; then
++        die "ERROR: JAVA_HOME is set to an invalid directory: $JAVA_HOME
++
++Please set the JAVA_HOME variable in your environment to match the
++location of your Java installation."
++    fi
++else
++    JAVACMD="java"
++    which java >/dev/null 2>&1 || die "ERROR: JAVA_HOME is not set and no 'java' command could be found in your PATH.
++
++Please set the JAVA_HOME variable in your environment to match the
++location of your Java installation."
++fi
++
++# Increase the maximum file descriptors if we can.
++if [ "$cygwin" = "false" -a "$darwin" = "false" ] ; then
++    MAX_FD_LIMIT=`ulimit -H -n`
++    if [ $? -eq 0 ] ; then
++        if [ "$MAX_FD" = "maximum" -o "$MAX_FD" = "max" ] ; then
++            MAX_FD="$MAX_FD_LIMIT"
++        fi
++        ulimit -n $MAX_FD
++        if [ $? -ne 0 ] ; then
++            warn "Could not set maximum file descriptor limit: $MAX_FD"
++        fi
++    else
++        warn "Could not query maximum file descriptor limit: $MAX_FD_LIMIT"
++    fi
++fi
++
++# For Darwin, add options to specify how the application appears in the dock
++if $darwin; then
++    GRADLE_OPTS="$GRADLE_OPTS \"-Xdock:name=$APP_NAME\" \"-Xdock:icon=$APP_HOME/media/gradle.icns\""
++fi
++
++# For Cygwin, switch paths to Windows format before running java
++if $cygwin ; then
++    APP_HOME=`cygpath --path --mixed "$APP_HOME"`
++    CLASSPATH=`cygpath --path --mixed "$CLASSPATH"`
++
++    # We build the pattern for arguments to be converted via cygpath
++    ROOTDIRSRAW=`find -L / -maxdepth 1 -mindepth 1 -type d 2>/dev/null`
++    SEP=""
++    for dir in $ROOTDIRSRAW ; do
++        ROOTDIRS="$ROOTDIRS$SEP$dir"
++        SEP="|"
++    done
++    OURCYGPATTERN="(^($ROOTDIRS))"
++    # Add a user-defined pattern to the cygpath arguments
++    if [ "$GRADLE_CYGPATTERN" != "" ] ; then
++        OURCYGPATTERN="$OURCYGPATTERN|($GRADLE_CYGPATTERN)"
++    fi
++    # Now convert the arguments - kludge to limit ourselves to /bin/sh
++    i=0
++    for arg in "$@" ; do
++        CHECK=`echo "$arg"|egrep -c "$OURCYGPATTERN" -`
++        CHECK2=`echo "$arg"|egrep -c "^-"`                                 ### Determine if an option
++
++        if [ $CHECK -ne 0 ] && [ $CHECK2 -eq 0 ] ; then                    ### Added a condition
++            eval `echo args$i`=`cygpath --path --ignore --mixed "$arg"`
++        else
++            eval `echo args$i`="\"$arg\""
++        fi
++        i=$((i+1))
++    done
++    case $i in
++        (0) set -- ;;
++        (1) set -- "$args0" ;;
++        (2) set -- "$args0" "$args1" ;;
++        (3) set -- "$args0" "$args1" "$args2" ;;
++        (4) set -- "$args0" "$args1" "$args2" "$args3" ;;
++        (5) set -- "$args0" "$args1" "$args2" "$args3" "$args4" ;;
++        (6) set -- "$args0" "$args1" "$args2" "$args3" "$args4" "$args5" ;;
++        (7) set -- "$args0" "$args1" "$args2" "$args3" "$args4" "$args5" "$args6" ;;
++        (8) set -- "$args0" "$args1" "$args2" "$args3" "$args4" "$args5" "$args6" "$args7" ;;
++        (9) set -- "$args0" "$args1" "$args2" "$args3" "$args4" "$args5" "$args6" "$args7" "$args8" ;;
++    esac
++fi
++
++# Split up the JVM_OPTS And GRADLE_OPTS values into an array, following the shell quoting and substitution rules
++function splitJvmOpts() {
++    JVM_OPTS=("$@")
++}
++eval splitJvmOpts $DEFAULT_JVM_OPTS $JAVA_OPTS $GRADLE_OPTS
++JVM_OPTS[${#JVM_OPTS[*]}]="-Dorg.gradle.appname=$APP_BASE_NAME"
++
++exec "$JAVACMD" "${JVM_OPTS[@]}" -classpath "$CLASSPATH" org.gradle.wrapper.GradleWrapperMain "$@"
+Index: app/build/generated/source/buildConfig/androidTest/debug/biman/middle/kokin/ru/test/BuildConfig.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/build/generated/source/buildConfig/androidTest/debug/biman/middle/kokin/ru/test/BuildConfig.java	(revision )
++++ app/build/generated/source/buildConfig/androidTest/debug/biman/middle/kokin/ru/test/BuildConfig.java	(revision )
+@@ -0,0 +1,13 @@
++/**
++ * Automatically generated file. DO NOT MODIFY
++ */
++package biman.middle.kokin.ru.test;
++
++public final class BuildConfig {
++  public static final boolean DEBUG = Boolean.parseBoolean("true");
++  public static final String APPLICATION_ID = "biman.middle.kokin.ru.test";
++  public static final String BUILD_TYPE = "debug";
++  public static final String FLAVOR = "";
++  public static final int VERSION_CODE = -1;
++  public static final String VERSION_NAME = "";
++}
+Index: app/src/main/java/biman/middle/kokin/ru/DocProcess.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/biman/middle/kokin/ru/DocProcess.java	(revision )
++++ app/src/main/java/biman/middle/kokin/ru/DocProcess.java	(revision )
+@@ -0,0 +1,228 @@
++package biman.middle.kokin.ru;
++
++import biman.middle.kokin.ru.SetSpinner;
++
++import java.util.ArrayList;
++import java.util.HashMap;
++import java.util.List;
++import java.util.Map;
++
++import android.database.Cursor;
++import android.database.sqlite.SQLiteDatabase;
++import android.view.View;
++import android.view.View.OnClickListener;
++import android.widget.AdapterView;
++import android.widget.AdapterView.OnItemSelectedListener;
++import android.widget.ArrayAdapter;
++import android.widget.Button;
++import android.widget.EditText;
++import android.widget.ExpandableListAdapter;
++import android.widget.ListAdapter;
++import android.widget.ListView;
++import android.widget.SimpleAdapter;
++import android.widget.Spinner;
++import android.widget.AdapterView.OnItemClickListener;
++
++public class DocProcess {
++    private static final String NAME = "NAME";
++    private static final String IS_EVEN = "IS_EVEN";
++    
++	EditText eFind;
++    Button bFind;
++    SQLiteDatabase database;
++    BiManActivity ba;
++    List<Map<String, String>> groupData;
++    List<List<Map<String, String>>> childData;
++    
++    ExpandableListAdapter mAdapter;
++    List<Map<String, String>> docs;
++    Map<String, String> docMap;
++    
++    String[] usrs;
++    
++    Spinner s1;					// ��������� ��� ������
++    SetSpinner spUsers;
++    SetSpinner spTypeDoc;
++    SetSpinner spInterval;
++    
++    String whereUsers;
++    String whereTypeDoc;
++    String whereInterval;    
++    
++	public void docStart(SQLiteDatabase db, BiManActivity pba ) {
++		ba = pba;
++		database = db;
++		whereUsers = "";
++		whereTypeDoc = "";
++
++		docs = new ArrayList<Map<String, String>>();
++		
++		
++        eFind = (EditText) ba.findViewById(R.id.findText);
++        bFind = (Button) ba.findViewById(R.id.bFind);
++        bFind.setOnClickListener(new OnClickListener() {
++        	@Override
++        	public void onClick(View v) {
++        		setdocView("", eFind.getText().toString());
++        	}
++        });
++
++        
++        spUsers = new SetSpinner(
++				database,
++				"select -1, '���'" +
++				"union "+
++				"select nid_user, cnm_user " +
++				"  from users ",
++				ba,
++				R.id.spinner_mngr
++		);
++
++        spUsers.s1.setOnItemSelectedListener(
++        		new OnItemSelectedListener(){
++
++					@Override
++					public void onItemSelected(AdapterView<?> arg0, View arg1,
++							int arg2, long arg3) {
++						// TODO Auto-generated method stub
++        				if (spUsers.arrID[arg2].equals("-1")) {
++        					whereUsers = "";        					
++        				} else {
++        					whereUsers = " and nID_Author="+spUsers.arrID[arg2];
++        				}	
++        				setdocView("0","");
++						
++					}
++
++					@Override
++					public void onNothingSelected(AdapterView<?> arg0) {
++						// TODO Auto-generated method stub
++						
++					}
++        			
++        		});
++        
++        
++        spTypeDoc = new SetSpinner(
++				database,
++				"select -1, '���'" +
++				"union "+
++				"select nid_typedoc, cnm_typedoc " +
++				"  from type_documents " +
++				" where nshow=1 and nshow2=1  ",
++				ba,
++				R.id.spinner_typedoc
++		);
++		
++        spTypeDoc.s1.setOnItemSelectedListener(
++        		new OnItemSelectedListener(){
++
++					@Override
++					public void onItemSelected(AdapterView<?> arg0, View arg1,
++							int arg2, long arg3) {
++						// TODO Auto-generated method stub
++        				if (spTypeDoc.arrID[arg2].equals("-1")) {
++        					whereTypeDoc = "";        					
++        				} else {
++        					whereTypeDoc = " and root_documents.nID_typedoc="+spTypeDoc.arrID[arg2];
++        				}	
++        				setdocView("0","");
++						
++					}
++
++					@Override
++					public void onNothingSelected(AdapterView<?> arg0) {
++						// TODO Auto-generated method stub
++						
++					}
++        			
++        		});
++        
++        
++        
++        
++        
++        spInterval = new SetSpinner(
++				database,
++				"select 1, '�������'" +
++				"union "+
++				"select 2, '3 ���'"+
++				"union "+
++				"select 3, '������'"+
++				"union "+
++				"select 4, '�����'"+
++				
++				"",
++				ba,
++				R.id.spinner_interval
++		);
++        
++        
++        setdocView("0","");
++        
++        
++	}
++
++    public void setdocView(String sidParent, String AddedWhere) {
++    	
++    	docs.clear();
++
++		String sqlDocs;
++   		sqlDocs = 
++   			"select nid_root, cnm_typedoc, cnumasis, ddateasis, cnm_kontragent " +
++   			"  from root_documents, type_documents, kontragents " +
++   			" where root_documents.nid_typedoc=type_documents.nid_typedoc" +
++   			"   and root_documents.nid_kontragent=kontragents.nid_kontragent" +
++   			"   and ddateasis>='2012.01.01'" +
++   			whereUsers +
++   			whereTypeDoc +   			
++   			" order by nid_root" +
++   			""
++   			
++   			;
++    	
++		Cursor docCursor = database.rawQuery(sqlDocs, new String [] {});
++		docCursor.moveToFirst();
++		if(!docCursor.isAfterLast()) {
++			do {
++		    	docMap = new HashMap<String, String>();
++		    	docs.add(docMap);
++		    	
++		    	String ddateasis=docCursor.getString(3).substring(0,10);
++		    	
++		    	docMap.put("cnumasis", docCursor.getString(2));// + " (" + docCursor.getString(0).toString()+")");    	
++		    	docMap.put("ddateasis", ddateasis);
++		    	docMap.put("cnm_typedoc", docCursor.getString(1));
++		    	docMap.put("cnm_kontragent", docCursor.getString(4));		    	
++			} while (docCursor.moveToNext());
++		}
++		docCursor.close();							
++		
++				
++		
++		ListView lv = (ListView)ba.findViewById(R.id.listDocs);
++		ListAdapter la = new SimpleAdapter(
++					ba, 
++					docs, 
++					R.layout.listdocs, 
++					new String[] {"cnumasis","ddateasis","cnm_typedoc", "cnm_kontragent"}, 
++					new int[]{R.id.cnumasis, R.id.ddateasis, R.id.cnm_typedoc, R.id.cnm_kontr}
++					);
++		lv.setAdapter(la);
++		lv.setOnItemClickListener(new OnItemClickListener(){
++
++			@Override
++			public void onItemClick(AdapterView<?> arg0, View v, int pos,
++					long arg3) {
++				// TODO Auto-generated method stub
++				ba.showDialog(2);
++
++				docMap = docs.get(pos);
++				//String s1=goodsMap.get("cnm_goodart").toString();
++				ba.eDocName.setText(docMap.get("cnumasis").toString());
++				
++			}});    	
++    	
++    }	
++	
++}
+Index: .idea/vcs.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- .idea/vcs.xml	(revision )
++++ .idea/vcs.xml	(revision )
+@@ -0,0 +1,6 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<project version="4">
++  <component name="VcsDirectoryMappings">
++    <mapping directory="$PROJECT_DIR$" vcs="Git" />
++  </component>
++</project>
+\ No newline at end of file
+Index: app/build.gradle
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/build.gradle	(revision )
++++ app/build.gradle	(revision )
+@@ -0,0 +1,19 @@
++apply plugin: 'com.android.application'
++
++android {
++    compileSdkVersion 17
++    buildToolsVersion "22.0.1"
++
++    defaultConfig {
++        applicationId "biman.middle.kokin.ru"
++        minSdkVersion 8
++        targetSdkVersion 8
++    }
++
++    buildTypes {
++        release {
++            minifyEnabled false
++            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
++        }
++    }
++}
