@@ -36,6 +36,7 @@ public class BiManActivity extends Activity {
     GoodsProcess goodProc;
     KontrProcess kontrProc;
     DocProcess docProc;
+	// -----------------
     
     TextView eGoodArt;
     TextView eGoodName;
@@ -66,7 +67,7 @@ public class BiManActivity extends Activity {
 
         ExternalDbOpenHelper dbOpenHelper = new ExternalDbOpenHelper(this, DB_NAME);
         database = dbOpenHelper.openDataBase();
-        //Все, база открыта!
+        //пїЅпїЅпїЅ, пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ!
         
         setContentView(R.layout.main);
 
@@ -77,19 +78,19 @@ public class BiManActivity extends Activity {
         
         LayoutInflater.from(this).inflate(R.layout.goodtab, tabHost.getTabContentView(), true);
        	TabSpec tc1 = tabHost.newTabSpec("tab1");      
-       	tc1.setIndicator("Каталог товаров");
+       	tc1.setIndicator("пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ");
        	tc1.setContent(R.id.v1);
         tabHost.addTab(tc1);
 
         LayoutInflater.from(this).inflate(R.layout.kontrtab, tabHost.getTabContentView(), true);        
        	TabSpec tc2 = tabHost.newTabSpec("tab2");
-       	tc2.setIndicator("Клиенты");
+       	tc2.setIndicator("пїЅпїЅпїЅпїЅпїЅпїЅпїЅ");
        	tc2.setContent(R.id.ktab);
         tabHost.addTab(tc2);
 
         LayoutInflater.from(this).inflate(R.layout.doctab, tabHost.getTabContentView(), true);        
        	TabSpec tc3 = tabHost.newTabSpec("tab3");
-       	tc3.setIndicator("Документы");
+       	tc3.setIndicator("пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ");
        	tc3.setContent(R.id.dtab);
         tabHost.addTab(tc3);
 
@@ -108,7 +109,7 @@ public class BiManActivity extends Activity {
         tv.setTextSize(30);        
         
         
-        // Создание вкладки Goods
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ Goods
         goodProc = new GoodsProcess();
         goodProc.goodsStart(database, this);
 
