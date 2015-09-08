@@ -108,6 +108,7 @@ public class GoodsProcess extends Activity {
     			;
 
         	Cursor childCursor = database.rawQuery(sqlGoodsTreeChild, new String [] {});
+			//childCursor = database.
         	//goods_ids = new String[childCursor.getCount()];
         	
         	childCursor.moveToFirst();
