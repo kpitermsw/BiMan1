@@ -20,7 +20,7 @@ import android.widget.TabHost.TabSpec;
 
 public class BiManActivity extends Activity { 
 	//extends  TabActivity implements TabHost.TabContentFactory {
-	// Проверка коммита
+	// Проверка коммита  111 222 333 4444
 	// 111
 	static SharedPreferences preferences;
     SharedPreferences.Editor editor;
