@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TabHost;
 import android.widget.TabWidget;
@@ -52,6 +53,10 @@ public class BiManActivity extends Activity {
     TabWidget tw;        
     TextView tv;
     View tabView;
+
+	public Button button1 ;
+	public Button button2 ;
+	public Button button3 ;
     
     
     /*
@@ -128,8 +133,19 @@ public class BiManActivity extends Activity {
        	InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
        	imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
         //		    android:focusable="false"
-        
-    }    
+
+		button1 = (Button) findViewById(R.id.button1);
+		button1.setOnClickListener(new View.OnClickListener() {
+			@Override
+
+			public void onClick(View v) {
+				button1.setText("aaa");
+				//setGoodView("", eFind.getText().toString());
+			}
+		});
+
+
+	}
     
     
     protected Dialog onCreateDialog(int id) {
