@@ -25,7 +25,7 @@ public class BiManActivity extends Activity {
 	Проверка коммита  111 222 333 4444
 	111
 	===
-	комментарий из River City
+	комментарий из River City ++
 	*/
 	static SharedPreferences preferences;
     SharedPreferences.Editor editor;
