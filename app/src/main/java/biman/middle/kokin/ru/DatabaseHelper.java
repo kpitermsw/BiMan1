@@ -20,7 +20,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	 
 	 static final String viewEmps="ViewEmps";
 	 
-	 //и создадим конструктор
+	 //пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	 
 	 public DatabaseHelper(Context context) {
 		 super(context, dbName, null,35);
@@ -49,7 +49,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		//}
 	
 	}
-
+// 111
 	public String getCol2() {
 		String res=""; 
 		SQLiteDatabase db=this.getReadableDatabase();
