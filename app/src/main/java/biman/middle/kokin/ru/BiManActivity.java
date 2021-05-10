@@ -1,5 +1,5 @@
 package biman.middle.kokin.ru;
-
+// ***
 
 import android.app.Activity;
 import android.app.AlertDialog;
